@@ -11,52 +11,94 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        :root { --sidebar: #2c3e50; --accent: #3498db; --save: #27ae60; --purple: #8e44ad; --danger: #e74c3c; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; background: #f0f2f5; overflow: hidden; }
-        
-        /* Overlays */
-        #loginOverlay, #welcomeOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        #loginOverlay { background: #2c3e50; }
-        #welcomeOverlay { background: rgba(44, 62, 80, 0.98); color: white; flex-direction: column; text-align: center; display: none; }
-        
-        .login-box, .welcome-box { background: white; padding: 40px; border-radius: 12px; width: 320px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        .welcome-box { color: #2c3e50; }
-        
-        .login-box h3 { color: #2c3e50; margin-bottom: 20px; }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        
-        .btn-login, .btn-ok { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        .btn-ok { background: var(--save); margin-top: 20px; }
-        .btn-login:hover, .btn-ok:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        #loginError { color: var(--danger); font-size: 13px; margin-top: 12px; display: none; font-weight: bold; }
+        :root { 
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --dark: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --text: #f8fafc;
+            --sidebar-color: #1e293b;
+            --save: #27ae60; 
+            --purple: #8e44ad; 
+            --danger: #e74c3c; 
+        }
 
-        /* UI Layout */
-        #sidebar { width: 320px; background: var(--sidebar); color: white; padding: 20px; overflow-y: auto; flex-shrink: 0; }
-        #main { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        .config-box { background: #34495e; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
-        label { font-size: 11px; font-weight: bold; color: #bdc3c7; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 4px; border: none; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation Menu - Matches index.html */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 8%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--glass);
+        }
+        .logo { font-weight: 600; font-size: 1.5rem; color: var(--primary); }
+        .nav-links { list-style: none; display: flex; gap: 30px; }
+        .nav-links a { text-decoration: none; color: var(--text); font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* Workspace Layout */
+        .workspace { display: flex; flex: 1; overflow: hidden; }
+
+        #sidebar { 
+            width: 320px; 
+            background: var(--sidebar-color); 
+            padding: 20px; 
+            overflow-y: auto; 
+            border-right: 1px solid var(--glass);
+        }
+        #main { flex: 1; padding: 20px; overflow-y: auto; }
+
+        .config-box { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); }
+        label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; }
         
-        .btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-blue { background: var(--accent); }
+        .btn { width: 100%; padding: 12px; margin-bottom: 8px; border: none; border-radius: 30px; cursor: pointer; font-weight: 600; color: white; transition: 0.3s; }
+        .btn-blue { background: linear-gradient(45deg, var(--primary), var(--secondary)); }
         .btn-green { background: var(--save); }
         .btn-purple { background: var(--purple); }
-        .btn-logout { background: var(--danger) !important; margin-top: 20px; }
+        .btn-logout { background: transparent !important; border: 1px solid var(--danger); color: var(--danger); margin-top: 20px; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        /* Chart & Tables */
+        #chart-wrapper { height: 400px; width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass); border-radius: 15px; padding: 15px; margin-bottom: 15px; position: relative; }
+        .card { background: var(--glass); padding: 20px; border-radius: 15px; border: 1px solid var(--glass); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; color: #cbd5e1; }
+        th, td { border: 1px solid rgba(255,255,255,0.1); padding: 8px 4px; text-align: center; }
+        th { background: rgba(255,255,255,0.05); color: var(--primary); }
+        .total-row { background: rgba(0, 210, 255, 0.1); font-weight: bold; }
+        .datum-info { font-size: 14px; color: var(--primary); font-weight: bold; text-align: center; margin-bottom: 10px; }
+
+        /* Original Interactive Overlays */
+        #loginOverlay, #welcomeOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        #loginOverlay { background: var(--dark); }
+        #welcomeOverlay { background: rgba(15, 23, 42, 0.98); display: none; }
         
-        #chart-wrapper { height: 420px; width: 100%; background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 15px; position: relative; }
-        canvas { width: 100% !important; height: 100% !important; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th, td { border: 1px solid #ccc; padding: 6px 4px; text-align: center; }
-        th { background: #f1f3f5; }
-        .total-row { background: #e8f4fd; font-weight: bold; }
-        .datum-info { font-size: 14px; color: #d35400; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        .login-box, .welcome-box { background: #1e293b; padding: 40px; border-radius: 20px; width: 350px; text-align: center; border: 1px solid var(--glass); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .welcome-box { color: var(--text); }
         
-        #loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); color:white; z-index:9999; flex-direction:column; align-items:center; justify-content:center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        .btn-login, .btn-ok { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-ok { background: var(--save); margin-top: 20px; }
+
+        #loader { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none; }
     </style>
@@ -65,19 +107,19 @@
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 style="margin-top:0;">Unique Consultancy</h2>
-        <p style="color:#7f8c8d; font-size: 14px;">Please login to continue</p>
+        <h2 style="color:var(--primary); margin-bottom:10px;">Unique Consultancy</h2>
+        <p style="color:#94a3b8; font-size: 14px; margin-bottom: 20px;">Please login to continue</p>
         <input type="text" id="uID" placeholder="User ID">
         <input type="password" id="uPass" placeholder="Password">
         <button class="btn-login" id="loginBtn" onclick="validateLogin()">Login</button>
-        <p id="loginError">Invalid Credentials</p>
+        <p id="loginError" style="color:var(--danger); display:none; margin-top:10px; font-weight: bold;">Invalid Credentials</p>
     </div>
 </div>
 
 <div id="welcomeOverlay">
     <div class="welcome-box">
         <h2 style="margin: 0 0 10px 0;">Welcome To Unique Consultancy</h2>
-        <h3 id="welcomeUserName" style="color: var(--accent); margin: 0 0 20px 0;"></h3>
+        <h3 id="welcomeUserName" style="color: var(--primary); margin: 0 0 20px 0;"></h3>
         <p style="font-size: 14px; line-height: 1.5;">You have successfully logged into the <strong>Unique Consultancy</strong> Earthwork System.</p>
         <button class="btn-ok" onclick="closeWelcome()">OK - Get Started</button>
     </div>
@@ -88,85 +130,96 @@
     <h2 id="loadStatus">Generating Reports...</h2>
 </div>
 
-<div id="sidebar">
-    <h2 style="color: var(--accent); margin-top:0;">Unique Consultancy</h2>
-    <div class="config-box">
-        <label>Layer 1 (OGL)</label>
-        <input type="text" id="l1Name" value="OGL">
-        <input type="file" id="f1" accept=".csv">
-    </div>
-    <div class="config-box">
-        <label>Layer 2 (PGL)</label>
-        <input type="text" id="l2Name" value="PGL">
-        <input type="file" id="f2" accept=".csv">
-    </div>
-    
-    <label>Current Chainage</label>
-    <select id="chSelect" onchange="runAnalysis()"></select>
-    
-    <button class="btn btn-blue" onclick="toggleVolume()">Generate Volume</button>
-    <button class="btn btn-purple" onclick="exportCSAndAreaPDF()">Export X-section</button>
-    <button class="btn btn-green" onclick="exportFinalExcel()">Export All Report</button>
-    
-    <button class="btn btn-logout" onclick="location.reload()">Logout</button>
-</div>
+<nav>
+    <div class="logo">Unique Consultancy</div>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="Earthwork.html">Earthwork</a></li>
+        <li><a href="Services.html">Services</a></li>
+        <li><a href="Contact_Us.html">Contact Us</a></li>
+    </ul>
+</nav>
 
-<div id="main">
-    <div id="datumLabel" class="datum-info">Datum: --</div>
-    <div id="chart-wrapper">
-        <canvas id="csChart"></canvas>
-    </div>
-
-    <div id="areaSection" class="card">
-        <h3 style="margin:0 0 10px 0; text-align:center;">Area Report</h3>
-        <table id="areaTable">
-            <thead>
-                <tr>
-                    <th rowspan="2">Sl</th><th rowspan="2">Dist</th><th rowspan="2" id="hL1">L1</th><th rowspan="2" id="hL2">L2</th>
-                    <th colspan="4" style="background:#fff0f0">Cutting</th>
-                    <th colspan="4" style="background:#f0fff0">Filling</th>
-                </tr>
-                <tr>
-                    <th>Depth</th><th>Avg</th><th>Width</th><th>Area</th>
-                    <th>Depth</th><th>Avg</th><th>Width</th><th>Area</th>
-                </tr>
-            </thead>
-            <tbody id="areaBody"></tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="7" style="text-align:right">Total Cut Area:</td><td id="areaTotalCut">0.000</td>
-                    <td colspan="3" style="text-align:right">Total Fill Area:</td><td id="areaTotalFill">0.000</td>
-                </tr>
-            </tfoot>
-        </table>
+<div class="workspace">
+    <div id="sidebar">
+        <div class="config-box">
+            <label>Layer 1 (OGL)</label>
+            <input type="text" id="l1Name" value="OGL">
+            <input type="file" id="f1" accept=".csv">
+        </div>
+        <div class="config-box">
+            <label>Layer 2 (PGL)</label>
+            <input type="text" id="l2Name" value="PGL">
+            <input type="file" id="f2" accept=".csv">
+        </div>
+        
+        <label>Current Chainage</label>
+        <select id="chSelect" onchange="runAnalysis()"></select>
+        
+        <button class="btn btn-blue" onclick="toggleVolume()">Generate Volume</button>
+        <button class="btn btn-purple" onclick="exportCSAndAreaPDF()">Export X-section</button>
+        <button class="btn btn-green" onclick="exportFinalExcel()">Export All Report</button>
+        
+        <button class="btn btn-logout" onclick="location.reload()">Logout</button>
     </div>
 
-    <div id="volumeSection" class="card hidden">
-        <h3 style="margin:0 0 10px 0; text-align:center;">Volume Report</h3>
-        <table id="volumeTable">
-            <thead>
-                <tr>
-                    <th rowspan="2">SL</th><th rowspan="2">Chainage</th><th rowspan="2">Dist</th>
-                    <th colspan="3">Cutting</th><th colspan="3">Filling</th>
-                </tr>
-                <tr>
-                    <th>Area</th><th>Avg Area</th><th>Vol</th>
-                    <th>Area</th><th>Avg Area</th><th>Vol</th>
-                </tr>
-            </thead>
-            <tbody id="volumeBody"></tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="5" style="text-align:right">Total Cut:</td><td id="volTotalCut">0.000</td>
-                    <td colspan="2" style="text-align:right">Total Fill:</td><td id="volTotalFill">0.000</td>
-                </tr>
-            </tfoot>
-        </table>
+    <div id="main">
+        <div id="datumLabel" class="datum-info">Datum: --</div>
+        <div id="chart-wrapper">
+            <canvas id="csChart"></canvas>
+        </div>
+
+        <div id="areaSection" class="card">
+            <h3 style="margin:0 0 15px 0; text-align:center; color:var(--primary);">Area Report</h3>
+            <table id="areaTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Sl</th><th rowspan="2">Dist</th><th rowspan="2" id="hL1">L1</th><th rowspan="2" id="hL2">L2</th>
+                        <th colspan="4" style="background:rgba(231, 76, 60, 0.1)">Cutting</th>
+                        <th colspan="4" style="background:rgba(39, 174, 96, 0.1)">Filling</th>
+                    </tr>
+                    <tr>
+                        <th>Depth</th><th>Avg</th><th>Width</th><th>Area</th>
+                        <th>Depth</th><th>Avg</th><th>Width</th><th>Area</th>
+                    </tr>
+                </thead>
+                <tbody id="areaBody"></tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="7" style="text-align:right">Total Cut Area:</td><td id="areaTotalCut">0.000</td>
+                        <td colspan="3" style="text-align:right">Total Fill Area:</td><td id="areaTotalFill">0.000</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div id="volumeSection" class="card hidden">
+            <h3 style="margin:0 0 15px 0; text-align:center; color:var(--primary);">Volume Report</h3>
+            <table id="volumeTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2">SL</th><th rowspan="2">Chainage</th><th rowspan="2">Dist</th>
+                        <th colspan="3">Cutting</th><th colspan="3">Filling</th>
+                    </tr>
+                    <tr>
+                        <th>Area</th><th>Avg Area</th><th>Vol</th>
+                        <th>Area</th><th>Avg Area</th><th>Vol</th>
+                    </tr>
+                </thead>
+                <tbody id="volumeBody"></tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="5" style="text-align:right">Total Cut:</td><td id="volTotalCut">0.000</td>
+                        <td colspan="2" style="text-align:right">Total Fill:</td><td id="volTotalFill">0.000</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-// --- NAVIGATION LOGIC ---
+// --- AUTHENTICATION ENGINE ---
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWrGypsJv4jQQ1B0ju7AOp_-jUHsxLq7eeRC_wjXwp0tZW6ttU4VRMzT4GxF5ZgcP9NbEXN-gY2tkQ/pub?output=csv";
 
 async function validateLogin() {
@@ -203,7 +256,7 @@ function closeWelcome() {
     document.getElementById('welcomeOverlay').style.display = 'none';
 }
 
-// --- DATA ENGINE ---
+// --- CALCULATION & DATA ENGINE ---
 let data1 = {}, data2 = {}, myChart = null;
 
 async function loadCSV(file, store) {
@@ -306,11 +359,17 @@ function drawChart(p1, p2, n1, n2, ch, datum) {
         },
         options: {
             animation: false, responsive: true, maintainAspectRatio: false,
-            plugins: { dragData: { round: 2, onDragEnd: (e,d,i,v) => { 
-                if(d===0) data1[ch][i].y = v.y; else data2[ch][i].y = v.y; 
-                runAnalysis(); 
-            }}},
-            scales: { x:{type:'linear', grid:{color:'#ddd'}}, y:{type:'linear', min:datum, grid:{color:'#ddd'}} }
+            plugins: { 
+                legend: { labels: { color: '#fff' } },
+                dragData: { round: 2, onDragEnd: (e,d,i,v) => { 
+                    if(d===0) data1[ch][i].y = v.y; else data2[ch][i].y = v.y; 
+                    runAnalysis(); 
+                }}
+            },
+            scales: { 
+                x:{type:'linear', grid:{color:'rgba(255,255,255,0.1)'}, ticks:{color:'#94a3b8'}}, 
+                y:{type:'linear', min:datum, grid:{color:'rgba(255,255,255,0.1)'}, ticks:{color:'#94a3b8'}} 
+            }
         }
     });
 }
@@ -346,19 +405,24 @@ function toggleVolume() {
     document.getElementById('volumeSection').classList.toggle('hidden');
 }
 
+// --- EXPORT ENGINE (Original Formatting Restored) ---
 async function exportCSAndAreaPDF() {
     const { jsPDF } = window.jspdf;
     const common = Object.keys(data1).filter(c => data2[c]).sort((a,b) => parseFloat(a)-parseFloat(b));
     if (!common.length) return;
+    
     document.getElementById('loader').style.display = 'flex';
-    const doc = new jsPDF('l', 'mm', 'a4');
+    document.getElementById('loadStatus').innerText = "Generating X-Sections...";
+
+    const doc = new jsPDF('l', 'mm', 'a4'); // Original Landscape
     for (let i = 0; i < common.length; i++) {
         document.getElementById('chSelect').value = common[i];
         runAnalysis();
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 250)); // Sync chart render
+        
         if (i > 0) doc.addPage();
         doc.text(`CROSS SECTION - CH: ${parseFloat(common[i]).toFixed(2)}`, 148, 12, { align: 'center' });
-        doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75);
+        doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75); // Original Dimensions
         doc.autoTable({ html: '#areaTable', startY: 100, theme: 'grid', styles: { fontSize: 7 } });
     }
     doc.save(`Unique_Earthwork_Report.pdf`);
