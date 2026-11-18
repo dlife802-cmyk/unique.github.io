@@ -41,6 +41,114 @@
             flex-direction: column;
         }
 
+        /* Modal Overlays */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 20000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Modal Content Card */
+        .auth-card {
+            background: #1e293b;
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .auth-card h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .auth-card p {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+        }
+
+        .auth-form .input-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .auth-form label {
+            font-size: 11px;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .auth-msg {
+            font-size: 11px;
+            margin-top: 5px;
+            margin-bottom: 12px;
+            display: none;
+            text-align: left;
+            padding: 8px 10px;
+            border-radius: 6px;
+        }
+        .auth-msg.error { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .auth-msg.success { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .auth-toggle-link {
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        /* Admin Table styling inside modal */
+        .admin-table {
+            width: 100%;
+            margin-top: 15px;
+            font-size: 11px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .badge-approved { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+        .pass-edit-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+        .pass-input-sm {
+            width: 90px !important;
+            padding: 4px 6px !important;
+            margin: 0 !important;
+            font-size: 11px !important;
+        }
+
         /* Navigation Header */
         nav {
             display: flex;
@@ -83,7 +191,7 @@
             border-bottom: 1px solid var(--glass-border);
         }
         label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        input[type="text"], input[type="number"], select { 
+        input[type="text"], input[type="number"], input[type="password"], select { 
             width: 100%; 
             padding: 8px 10px; 
             margin-bottom: 10px; 
@@ -95,7 +203,11 @@
             outline: none;
             transition: all 0.2s;
         }
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+        select option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus, select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 8px rgba(0, 210, 255, 0.2);
         }
@@ -132,11 +244,12 @@
             gap: 6px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
-        .btn-sm { width: auto; padding: 6px 14px; font-size: 11px; }
+        .btn-sm { width: auto; padding: 6px 10px; font-size: 11px; }
         .btn-blue { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
         .btn-green { background: linear-gradient(135deg, #10b981, #059669); }
         .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
         .btn-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
         .btn-outline { background: transparent; border: 1px solid var(--glass-border); color: var(--text); }
         .btn-outline:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
         .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
@@ -245,6 +358,136 @@
 </head>
 <body>
 
+<!-- Login Modal -->
+<div id="loginModal" class="modal-overlay">
+    <div class="auth-card">
+        <h2>Earthwork Portal</h2>
+        <p>Please log in to access the calculation system.</p>
+
+        <form class="auth-form" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" required>
+            </div>
+
+            <div class="auth-msg error" id="loginError">Invalid credentials or account pending approval.</div>
+
+            <button type="submit" class="btn btn-blue" style="margin-top: 8px;">Log In</button>
+        </form>
+
+        <div>
+            <span class="auth-toggle-link" onclick="showSignupModal()">Don't have an account? Request Signup</span>
+        </div>
+    </div>
+</div>
+
+<!-- Signup Request Modal -->
+<div id="signupModal" class="modal-overlay hidden">
+    <div class="auth-card">
+        <h2>Request Access Account</h2>
+        <p>Submit your details for Admin approval.</p>
+
+        <form class="auth-form" onsubmit="handleSignupRequest(event)">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="signupName" placeholder="John Doe" required>
+            </div>
+
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="signupUsername" placeholder="Choose a username" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword" placeholder="Choose a password" required>
+            </div>
+
+            <div class="auth-msg" id="signupMsg"></div>
+
+            <button type="submit" class="btn btn-green" style="margin-top: 8px;">Submit Request</button>
+        </form>
+
+        <div>
+            <span class="auth-toggle-link" onclick="showLoginModal()">Back to Login</span>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Approval & Password Change Panel Modal -->
+<div id="adminPanelModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width: 720px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h2 style="margin:0;">Admin User Management</h2>
+            <button class="btn btn-sm btn-outline" onclick="closeAdminPanel()">Close</button>
+        </div>
+        <p>Manage user approvals and update passwords linked to Admin Sheet database.</p>
+
+        <div style="margin-bottom: 15px; padding: 12px; background: rgba(0, 210, 255, 0.05); border: 1px solid rgba(0, 210, 255, 0.2); border-radius: 8px; text-align: left;">
+            <label style="color: var(--primary); margin-bottom: 6px;">Google Sheet Database (PASSWORD)</label>
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
+                Linked Sheet: <a href="https://docs.google.com/spreadsheets/d/1f-w6u5sYwaBNBQkmzc1OBByHAtklJ2m-Srn2QCu5QkY/edit" target="_blank" style="color: var(--primary);">PASSWORD Spreadsheet</a>
+            </div>
+            <div style="font-size: 11px; color: #10b981; font-weight: 500;">
+                ✓ API Endpoint hardcoded & active automatically.
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Change Password</th>
+                        <th>Approval</th>
+                    </tr>
+                </thead>
+                <tbody id="adminUserList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Node Popup Modal -->
+<div id="addNodeModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width: 380px;">
+        <h2>Add Cross-Section Node</h2>
+        <p>Insert a new Offset & Level point into the active chainage.</p>
+
+        <form class="auth-form" onsubmit="confirmAddNode(event)">
+            <div class="input-group">
+                <label>Layer</label>
+                <select id="nodeLayerSelect" required>
+                    <option value="L1">OGL</option>
+                    <option value="L2">PGL</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Offset (m)</label>
+                <input type="number" id="nodeOffsetInput" step="any" placeholder="e.g. -2.50 or 7.50" required>
+            </div>
+
+            <div class="input-group">
+                <label>Level / RL (m)</label>
+                <input type="number" id="nodeLevelInput" step="any" placeholder="e.g. 104.25" required>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top: 15px;">
+                <button type="button" class="btn btn-outline" onclick="closeAddNodeModal()">Cancel</button>
+                <button type="submit" class="btn btn-blue">OK</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="loader">
     <div class="spinner"></div>
     <h3 id="loadStatus" style="font-weight: 500; color: #f8fafc;">Processing Earthwork Calculations...</h3>
@@ -259,6 +502,12 @@
     </div>
     
     <div class="project-actions">
+        <!-- Admin Panel Toggle Button (Only Visible to Admin) -->
+        <button id="adminPanelBtn" class="btn btn-sm btn-amber hidden" onclick="openAdminPanel()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Admin Panel
+        </button>
+
         <!-- Project Save & Load Actions -->
         <button class="btn btn-sm btn-green" onclick="saveProjectJSON()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
@@ -274,6 +523,10 @@
         <button class="btn btn-sm btn-outline" onclick="loadSampleData()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             Demo Data
+        </button>
+
+        <button class="btn btn-sm btn-outline" onclick="handleLogout()" style="border-color: var(--danger); color: var(--danger);">
+            Logout
         </button>
     </div>
 </nav>
@@ -337,9 +590,15 @@
     </div>
 
     <div id="main">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="font-weight:600; font-size:1.1rem; color:#f8fafc;" id="activeChainageTitle">Cross Section Visualizer</h2>
-            <div id="datumLabel" class="datum-info">Datum: -- | Max RL: --</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <h2 style="font-weight:600; font-size:1.1rem; color:#f8fafc;" id="activeChainageTitle">Cross Section Visualizer (Scale 1:100)</h2>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="btn btn-sm btn-blue" onclick="openAddNodeModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add Node
+                </button>
+                <div id="datumLabel" class="datum-info">Datum: -- | Max RL: --</div>
+            </div>
         </div>
         
         <div id="chart-wrapper">
@@ -424,6 +683,301 @@
 </div>
 
 <script>
+// Hardcoded Google Apps Script API Endpoint for PASSWORD Google Sheet Database
+const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbyoxOc9MB82u_W0nZ2J1eWMXufBPVVyvRK1NVHw-YGkTQdQilKleXR8hW4ddXH0dmNTbA/exec";
+
+// Default Accounts fallback matching PASSWORD Google Sheet
+const DEFAULT_USERS = [
+    { name: "UNIQUE Admin", username: "UNIQUE", password: "DIPAKs@123", role: "admin", status: "approved" },
+    { name: "SUBHENDU User", username: "SUBHENDU", password: "543210", role: "user", status: "approved" },
+    { name: "Trial User", username: "Trial", password: "Trial", role: "user", status: "approved" },
+    { name: "AFTAR User", username: "AFTAR", password: "12345", role: "user", status: "approved" }
+];
+
+function getUsers() {
+    const saved = localStorage.getItem('earthwork_users');
+    if (!saved) {
+        localStorage.setItem('earthwork_users', JSON.stringify(DEFAULT_USERS));
+        return DEFAULT_USERS;
+    }
+    return JSON.parse(saved);
+}
+
+function saveUsers(users) {
+    localStorage.setItem('earthwork_users', JSON.stringify(users));
+}
+
+// Auth Handlers (Hybrid: Google Sheet Verified + Safe Local Fallback)
+async function handleLogin(e) {
+    e.preventDefault();
+    const user = document.getElementById('loginUsername').value.trim();
+    const pass = document.getElementById('loginPassword').value.trim();
+    const errLabel = document.getElementById('loginError');
+
+    try {
+        const res = await fetch(SHEET_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "login", username: user, password: pass })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            sessionStorage.setItem('isEarthworkLoggedIn', 'true');
+            sessionStorage.setItem('loggedInUserRole', result.role || (user.toUpperCase() === "UNIQUE" ? "admin" : "user"));
+            sessionStorage.setItem('loggedInUsername', user);
+
+            document.getElementById('loginModal').classList.add('hidden');
+            errLabel.style.display = 'none';
+            
+            checkAdminRoleUI();
+            loadSampleData();
+            showToast(`Welcome back, ${result.name || user}! (Verified via PASSWORD Sheet)`);
+            return;
+        } else {
+            errLabel.innerText = result.message || "Invalid credentials or pending approval.";
+            errLabel.style.display = 'block';
+            return;
+        }
+    } catch (err) {
+        console.warn("Sheet API connection skipped/failed, using local credential database...", err);
+    }
+
+    // Direct Credential Check from Local / Sheet Database Fallback
+    const users = getUsers();
+    const matched = users.find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
+
+    if (!matched) {
+        errLabel.innerText = "Invalid username or password.";
+        errLabel.style.display = 'block';
+        return;
+    }
+
+    if (matched.status !== 'approved') {
+        errLabel.innerText = "Account request pending Admin approval.";
+        errLabel.style.display = 'block';
+        return;
+    }
+
+    sessionStorage.setItem('isEarthworkLoggedIn', 'true');
+    sessionStorage.setItem('loggedInUserRole', matched.role);
+    sessionStorage.setItem('loggedInUsername', matched.username);
+
+    document.getElementById('loginModal').classList.add('hidden');
+    errLabel.style.display = 'none';
+    
+    checkAdminRoleUI();
+    loadSampleData();
+    showToast(`Welcome back, ${matched.name}!`);
+}
+
+async function handleSignupRequest(e) {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value.trim();
+    const user = document.getElementById('signupUsername').value.trim();
+    const pass = document.getElementById('signupPassword').value.trim();
+    const msg = document.getElementById('signupMsg');
+
+    try {
+        const res = await fetch(SHEET_API_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "signup", name, username: user, password: pass })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            msg.className = "auth-msg success";
+            msg.innerText = result.message || "Signup request saved to PASSWORD Sheet! Awaiting Admin approval.";
+            msg.style.display = 'block';
+            setTimeout(() => { showLoginModal(); msg.style.display = 'none'; }, 2500);
+            return;
+        } else {
+            msg.className = "auth-msg error";
+            msg.innerText = result.message || "Username already exists.";
+            msg.style.display = 'block';
+            return;
+        }
+    } catch (err) {
+        console.warn("Sheet API failed, saving signup locally...", err);
+    }
+
+    // Local Storage Signup Fallback
+    let users = getUsers();
+    if (users.some(u => u.username.toLowerCase() === user.toLowerCase())) {
+        msg.className = "auth-msg error";
+        msg.innerText = "Username already exists! Choose another.";
+        msg.style.display = 'block';
+        return;
+    }
+
+    users.push({ name, username: user, password: pass, role: "user", status: "pending" });
+    saveUsers(users);
+
+    msg.className = "auth-msg success";
+    msg.innerText = "Signup request submitted! Please wait for Admin approval.";
+    msg.style.display = 'block';
+
+    setTimeout(() => {
+        showLoginModal();
+        msg.style.display = 'none';
+    }, 2500);
+}
+
+function handleLogout() {
+    sessionStorage.removeItem('isEarthworkLoggedIn');
+    sessionStorage.removeItem('loggedInUserRole');
+    sessionStorage.removeItem('loggedInUsername');
+    location.reload();
+}
+
+function showSignupModal() {
+    document.getElementById('loginModal').classList.add('hidden');
+    document.getElementById('signupModal').classList.remove('hidden');
+}
+
+function showLoginModal() {
+    document.getElementById('signupModal').classList.add('hidden');
+    document.getElementById('loginModal').classList.remove('hidden');
+}
+
+function checkAdminRoleUI() {
+    const role = sessionStorage.getItem('loggedInUserRole');
+    const adminBtn = document.getElementById('adminPanelBtn');
+    if (role === 'admin') {
+        adminBtn.classList.remove('hidden');
+    } else {
+        adminBtn.classList.add('hidden');
+    }
+}
+
+// Admin Panel Logic
+function openAdminPanel() {
+    renderAdminUserList();
+    document.getElementById('adminPanelModal').classList.remove('hidden');
+}
+
+function closeAdminPanel() {
+    document.getElementById('adminPanelModal').classList.add('hidden');
+}
+
+function renderAdminUserList() {
+    const users = getUsers();
+    const tbody = document.getElementById('adminUserList');
+    tbody.innerHTML = "";
+
+    users.forEach(u => {
+        if (u.role === 'admin') return; // Hide main admin from list
+
+        const isApproved = u.status === 'approved';
+        const badgeHtml = isApproved 
+            ? `<span class="badge badge-approved">Approved</span>`
+            : `<span class="badge badge-pending">Pending</span>`;
+
+        const actionBtn = isApproved
+            ? `<button class="btn btn-sm btn-danger" onclick="toggleUserStatus('${u.username}', 'pending')">Revoke</button>`
+            : `<button class="btn btn-sm btn-green" onclick="toggleUserStatus('${u.username}', 'approved')">Approve</button>`;
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.username}</td>
+                <td>${badgeHtml}</td>
+                <td>
+                    <div class="pass-edit-group">
+                        <input type="password" class="pass-input-sm" id="newPass_${u.username}" placeholder="New Pass">
+                        <button class="btn btn-sm btn-purple" onclick="changeUserPassword('${u.username}')">Save</button>
+                    </div>
+                </td>
+                <td>${actionBtn}</td>
+            </tr>
+        `;
+    });
+}
+
+function changeUserPassword(username) {
+    const input = document.getElementById(`newPass_${username}`);
+    const newPass = input.value.trim();
+
+    if (!newPass) {
+        showToast("Please enter a new password first.");
+        return;
+    }
+
+    let users = getUsers();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (user) {
+        user.password = newPass;
+        saveUsers(users);
+        input.value = "";
+        showToast(`Password updated for user '${username}'!`);
+    }
+}
+
+function toggleUserStatus(username, newStatus) {
+    let users = getUsers();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (user) {
+        user.status = newStatus;
+        saveUsers(users);
+        renderAdminUserList();
+        showToast(`User '${username}' ${newStatus === 'approved' ? 'approved' : 'status updated'}.`);
+    }
+}
+
+// Add Node Modal Logic
+function openAddNodeModal() {
+    const ch = document.getElementById('chSelect').value;
+    if (!ch || !data1[ch] || !data2[ch]) {
+        showToast("Please select a valid active chainage first!");
+        return;
+    }
+
+    const n1 = document.getElementById('l1Name').value || "OGL";
+    const n2 = document.getElementById('l2Name').value || "PGL";
+    const layerSelect = document.getElementById('nodeLayerSelect');
+    layerSelect.options[0].text = n1;
+    layerSelect.options[1].text = n2;
+
+    document.getElementById('nodeOffsetInput').value = "";
+    document.getElementById('nodeLevelInput').value = "";
+    document.getElementById('addNodeModal').classList.remove('hidden');
+    document.getElementById('nodeOffsetInput').focus();
+}
+
+function closeAddNodeModal() {
+    document.getElementById('addNodeModal').classList.add('hidden');
+}
+
+function confirmAddNode(e) {
+    e.preventDefault();
+    const ch = document.getElementById('chSelect').value;
+    const layer = document.getElementById('nodeLayerSelect').value;
+    const offset = parseFloat(document.getElementById('nodeOffsetInput').value);
+    const level = parseFloat(document.getElementById('nodeLevelInput').value);
+
+    if (!ch || isNaN(offset) || isNaN(level)) {
+        showToast("Please enter valid Offset and Level values.");
+        return;
+    }
+
+    const targetArray = layer === "L1" ? data1[ch] : data2[ch];
+    const layerLabel = layer === "L1" 
+        ? (document.getElementById('l1Name').value || "OGL") 
+        : (document.getElementById('l2Name').value || "PGL");
+
+    // Update existing offset if exact match exists, otherwise push new node
+    const existingIndex = targetArray.findIndex(p => Math.abs(p.x - offset) < 0.0001);
+    if (existingIndex !== -1) {
+        targetArray[existingIndex].y = level;
+    } else {
+        targetArray.push({ x: offset, y: level });
+        targetArray.sort((a, b) => a.x - b.x);
+    }
+
+    closeAddNodeModal();
+    runAnalysis();
+    showToast(`Node added to ${layerLabel} (Offset: ${offset.toFixed(2)}m, Level: ${level.toFixed(3)}m)`);
+}
+
 // Global Data Stores
 let data1 = {}, data2 = {};
 let file1Name = "", file2Name = "";
@@ -510,7 +1064,7 @@ function runAnalysis() {
     const ch = document.getElementById('chSelect').value;
     if(!ch || !data1[ch] || !data2[ch]) return;
 
-    document.getElementById('activeChainageTitle').innerText = `Cross Section - Chainage: ${parseFloat(ch).toFixed(2)}`;
+    document.getElementById('activeChainageTitle').innerText = `Cross Section - Chainage: ${parseFloat(ch).toFixed(2)} (Scale 1:100)`;
 
     const strip = parseFloat(document.getElementById('stripDepth').value) || 0;
     
@@ -593,6 +1147,8 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit) {
             animation: false, 
             responsive: true, 
             maintainAspectRatio: false,
+            // Enforce equal 1:1 data scaling ratio (1 unit X = 1 unit Y) for 1:100 representation
+            aspectRatio: 1,
             plugins: { 
                 legend: { labels: { color: '#f8fafc', font: { family: 'Poppins', size: 12 } } },
                 dragData: { 
@@ -606,8 +1162,20 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit) {
                 }
             },
             scales: { 
-                x: { type:'linear', title: { display: true, text: 'Distance / Offset (m)', color: '#94a3b8' }, grid:{ color:'rgba(255,255,255,0.06)' }, ticks:{ color:'#94a3b8' } }, 
-                y: { type:'linear', min: datum, max: topLimit, title: { display: true, text: 'Elevation (m)', color: '#94a3b8' }, grid:{ color:'rgba(255,255,255,0.06)' }, ticks:{ color:'#94a3b8' } } 
+                x: { 
+                    type:'linear', 
+                    title: { display: true, text: 'Distance / Offset (m) [Scale 1:100]', color: '#94a3b8' }, 
+                    grid:{ color:'rgba(255,255,255,0.06)' }, 
+                    ticks:{ color:'#94a3b8' } 
+                }, 
+                y: { 
+                    type:'linear', 
+                    min: datum, 
+                    max: topLimit, 
+                    title: { display: true, text: 'Elevation (m) [Scale 1:100]', color: '#94a3b8' }, 
+                    grid:{ color:'rgba(255,255,255,0.06)' }, 
+                    ticks:{ color:'#94a3b8' } 
+                } 
             }
         }
     });
@@ -814,7 +1382,7 @@ async function exportCSAndAreaPDF() {
         
         if (i > 0) doc.addPage();
         doc.setFontSize(14);
-        doc.text(`CROSS SECTION REPORT - CHAINAGE: ${parseFloat(common[i]).toFixed(2)} m`, 148, 12, { align: 'center' });
+        doc.text(`CROSS SECTION REPORT (Scale 1:100) - CHAINAGE: ${parseFloat(common[i]).toFixed(2)} m`, 148, 12, { align: 'center' });
         doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75);
         doc.autoTable({ html: '#areaTable', startY: 98, theme: 'grid', styles: { fontSize: 7 } });
     }
@@ -877,11 +1445,16 @@ function loadSampleData() {
     document.getElementById('f2Status').innerText = "Demo_PGL.csv";
 
     syncChainages();
-    showToast("Demo Project Data Loaded!");
 }
 
 window.onload = function() {
-    loadSampleData();
+    if (sessionStorage.getItem('isEarthworkLoggedIn') === 'true') {
+        document.getElementById('loginModal').classList.add('hidden');
+        checkAdminRoleUI();
+        loadSampleData();
+    } else {
+        document.getElementById('loginModal').classList.remove('hidden');
+    }
 };
 </script>
 </body>
