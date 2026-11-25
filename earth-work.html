@@ -155,6 +155,31 @@
     </div>
   </div>
 
+  <!-- Remove Node Modal -->
+  <div id="removeNodeModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width:380px;">
+      <h2>Remove Cross-Section Node</h2>
+      <p>Select a layer and offset point to remove from the active chainage.</p>
+      <form class="auth-form" onsubmit="confirmRemoveNode(event)">
+        <div class="input-group">
+          <label>Layer</label>
+          <select id="removeNodeLayerSelect" onchange="populateRemoveNodeOffsets()" required>
+            <option value="L1">OGL</option>
+            <option value="L2">PGL</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Offset (m)</label>
+          <select id="removeNodeOffsetSelect" required></select>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeRemoveNodeModal()">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-full">Remove</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="loader">
     <div class="spinner"></div>
     <h3 id="loadStatus" style="font-weight:500;">Processing Earthwork Calculations...</h3>
@@ -228,6 +253,7 @@
             <h2 style="font-weight:700; font-size:1.15rem; color:var(--navy-900);" id="activeChainageTitle">Cross Section Visualizer (Scale 1:100)</h2>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <button type="button" class="btn btn-sm btn-navy" onclick="openAddNodeModal()">+ Add Node</button>
+              <button type="button" class="btn btn-sm btn-danger" onclick="openRemoveNodeModal()">- Remove Node</button>
               <div id="datumLabel" class="datum-info">Datum: -- | Max RL: --</div>
             </div>
           </div>
@@ -589,6 +615,61 @@ function confirmAddNode(e) {
   closeAddNodeModal();
   runAnalysis();
   showToast("Node added at offset " + offset.toFixed(3) + "m, RL " + level.toFixed(3) + "m");
+}
+
+function openRemoveNodeModal() {
+  const ch = document.getElementById('chSelect').value;
+  if (!ch || !data1[ch] || !data2[ch]) {
+    showToast("Please select a valid active chainage first!");
+    return;
+  }
+  const n1 = document.getElementById('l1Name').value || "OGL";
+  const n2 = document.getElementById('l2Name').value || "PGL";
+  const layerSelect = document.getElementById('removeNodeLayerSelect');
+  layerSelect.options[0].text = n1;
+  layerSelect.options[1].text = n2;
+  layerSelect.value = "L1";
+  populateRemoveNodeOffsets();
+  document.getElementById('removeNodeModal').classList.remove('hidden');
+}
+
+function populateRemoveNodeOffsets() {
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('removeNodeLayerSelect').value;
+  const offsetSelect = document.getElementById('removeNodeOffsetSelect');
+  offsetSelect.innerHTML = "";
+  if (!ch || !data1[ch] || !data2[ch]) return;
+  const arr = layer === "L1" ? data1[ch] : data2[ch];
+  arr.forEach((pt, idx) => {
+    const opt = document.createElement('option');
+    opt.value = idx;
+    opt.text = pt.x.toFixed(3) + " m (RL: " + pt.y.toFixed(3) + " m)";
+    offsetSelect.appendChild(opt);
+  });
+}
+
+function closeRemoveNodeModal() {
+  document.getElementById('removeNodeModal').classList.add('hidden');
+}
+
+function confirmRemoveNode(e) {
+  e.preventDefault();
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('removeNodeLayerSelect').value;
+  const idx = parseInt(document.getElementById('removeNodeOffsetSelect').value, 10);
+  if (!ch || isNaN(idx)) return;
+
+  const targetArray = layer === "L1" ? data1[ch] : data2[ch];
+  if (targetArray.length <= 2) {
+    showToast("At least 2 nodes must remain in a cross-section layer.");
+    return;
+  }
+  if (idx >= 0 && idx < targetArray.length) {
+    const removed = targetArray.splice(idx, 1)[0];
+    closeRemoveNodeModal();
+    runAnalysis();
+    showToast("Node removed at offset " + removed.x.toFixed(3) + "m, RL " + removed.y.toFixed(3) + "m");
+  }
 }
 
 let data1 = {}, data2 = {};
