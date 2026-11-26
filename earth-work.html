@@ -691,8 +691,11 @@ async function handleSignupRequest(e) {
       showPostSignupQrScreen(name, user);
       return;
     } else {
+      const rawMsg = String(result.message || "");
       msg.className = "auth-msg error";
-      msg.innerText = result.message || "Username already exists.";
+      msg.innerText = /already\s*exists/i.test(rawMsg)
+        ? "Username already exists"
+        : (rawMsg || "Username already exists");
       msg.style.display = 'block';
       return;
     }
@@ -703,7 +706,7 @@ async function handleSignupRequest(e) {
   let users = getUsers();
   if (users.some(u => u.username.toLowerCase() === user.toLowerCase())) {
     msg.className = "auth-msg error";
-    msg.innerText = "Username already exists! Choose another.";
+    msg.innerText = "Username already exists";
     msg.style.display = 'block';
     return;
   }
