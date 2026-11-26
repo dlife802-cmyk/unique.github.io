@@ -62,7 +62,7 @@
           <label>Password</label>
           <input type="password" id="loginPassword" placeholder="Enter password" required>
         </div>
-        <div class="auth-msg error" id="loginError">Invalid credentials or account pending approval.</div>
+        <div class="auth-msg error" id="loginError">Account pending approval by Admin. WhatsApp With payment screenshot</div>
         <button type="submit" class="btn btn-amber btn-full" style="margin-top:6px;">Log In</button>
       </form>
       <div>
@@ -235,6 +235,72 @@
     </div>
   </div>
 
+  <!-- Edit Node Modal -->
+  <div id="editNodeModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width:380px;">
+      <h2>Edit Cross-Section Node</h2>
+      <p>Select an existing node and update its Offset &amp; Level.</p>
+      <form class="auth-form" onsubmit="confirmEditNode(event)">
+        <div class="input-group">
+          <label>Layer</label>
+          <select id="editNodeLayerSelect" onchange="populateEditNodeSelect()" required>
+            <option value="L1">OGL</option>
+            <option value="L2">PGL</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Select Node</label>
+          <select id="editNodeIndexSelect" onchange="loadSelectedEditNodeValues()" required></select>
+        </div>
+        <div class="input-group">
+          <label>New Offset (m)</label>
+          <input type="number" id="editNodeOffsetInput" step="any" required>
+        </div>
+        <div class="input-group">
+          <label>New Level / RL (m)</label>
+          <input type="number" id="editNodeLevelInput" step="any" required>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeEditNodeModal()">Cancel</button>
+          <button type="submit" class="btn btn-amber btn-full">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Node Modal -->
+  <div id="editNodeModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width:380px;">
+      <h2>Edit Cross-Section Node</h2>
+      <p>Select an existing node and update its Offset &amp; Level.</p>
+      <form class="auth-form" onsubmit="confirmEditNode(event)">
+        <div class="input-group">
+          <label>Layer</label>
+          <select id="editNodeLayerSelect" onchange="populateEditNodeSelect()" required>
+            <option value="L1">OGL</option>
+            <option value="L2">PGL</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Select Node</label>
+          <select id="editNodeIndexSelect" onchange="loadSelectedEditNodeValues()" required></select>
+        </div>
+        <div class="input-group">
+          <label>New Offset (m)</label>
+          <input type="number" id="editNodeOffsetInput" step="any" required>
+        </div>
+        <div class="input-group">
+          <label>New Level / RL (m)</label>
+          <input type="number" id="editNodeLevelInput" step="any" required>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeEditNodeModal()">Cancel</button>
+          <button type="submit" class="btn btn-amber btn-full">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="loader">
     <div class="spinner"></div>
     <h3 id="loadStatus" style="font-weight:500;">Processing Earthwork Calculations...</h3>
@@ -251,16 +317,21 @@
         </div>
         <div class="ew-actions">
           <button id="adminPanelBtn" type="button" class="btn btn-sm btn-amber hidden" onclick="openAdminPanel()">Admin Panel</button>
-          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project</button>
-          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Open Project</label>
+          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project (.JSON)</button>
+          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Load Project (.JSON)</label>
           <input type="file" id="projectFileInput" class="hidden-file" accept=".json" onchange="loadProjectJSON(event)">
-          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Load Demo</button>
+          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Demo Data</button>
           <button type="button" class="btn btn-sm btn-danger" onclick="handleLogout()">Logout</button>
         </div>
       </div>
 
       <div class="ew-workspace">
         <aside class="ew-sidebar">
+          <div class="config-box" style="border-left-color: var(--amber-500);">
+            <label>Project Name <span style="color:#dc2626;">*</span></label>
+            <input type="text" id="projectName" placeholder="Required: e.g. Highway NH-44 Pkg-2" value="" required onchange="updateProjectDisplay()">
+          </div>
+
           <div class="config-box">
             <label>Layer 1 (OGL / Ground)</label>
             <input type="text" id="l1Name" value="OGL" onchange="runAnalysis()">
@@ -308,6 +379,7 @@
             <h2 style="font-weight:700; font-size:1.15rem; color:var(--navy-900);" id="activeChainageTitle">Cross Section Visualizer (Scale 1:100)</h2>
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <button type="button" class="btn btn-sm btn-navy" onclick="openAddNodeModal()">+ Add Node</button>
+              <button type="button" class="btn btn-sm btn-amber" onclick="openEditNodeModal()">✎ Edit Node</button>
               <button type="button" class="btn btn-sm btn-danger" onclick="openRemoveNodeModal()">- Remove Node</button>
               <div id="datumLabel" class="datum-info">Datum: -- | Max RL: --</div>
             </div>
@@ -469,7 +541,12 @@ async function handleLogin(e) {
       showToast("Welcome back, " + (result.name || user) + "! Blank project opened.");
       return;
     } else {
-      errLabel.innerText = result.message || "Invalid credentials or pending approval.";
+      const rawMsg = String(result.message || "");
+      if (/pending|approval/i.test(rawMsg)) {
+        errLabel.innerText = "Account pending approval by Admin. WhatsApp With payment screenshot";
+      } else {
+        errLabel.innerText = "Invalid credentials";
+      }
       errLabel.style.display = 'block';
       return;
     }
@@ -480,12 +557,12 @@ async function handleLogin(e) {
   const users = getUsers();
   const matched = users.find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
   if (!matched) {
-    errLabel.innerText = "Invalid username or password.";
+    errLabel.innerText = "Invalid credentials";
     errLabel.style.display = 'block';
     return;
   }
   if (matched.status !== 'approved') {
-    errLabel.innerText = "Account request pending Admin approval.";
+    errLabel.innerText = "Account pending approval by Admin. WhatsApp With payment screenshot";
     errLabel.style.display = 'block';
     return;
   }
@@ -744,22 +821,36 @@ async function syncUserMutationToSheet(payloadObj, updatedUsersList) {
   try {
     const res = await fetch(SHEET_API_URL, {
       method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(bodyPayload)
     });
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      const refreshed = normalizeSheetUsers(data);
-      if (refreshed && refreshed.length > 0) {
-        adminSheetUsersCache = refreshed;
-        saveUsers(refreshed);
+    const rawText = await res.text();
+    let data = {};
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch (parseErr) {
+      if (res.ok) {
+        setAdminSyncBanner("&#10003; Request sent to Google Sheet (" + new Date().toLocaleTimeString() + ").", false);
+        return true;
       }
-      if (data && data.success === false) {
-        setAdminSyncBanner("&#9888; Saved locally; Sheet rejected update: " + (data.message || "Check Apps Script handler."), true);
-        return false;
-      }
-      setAdminSyncBanner("&#10003; All changes synced automatically to Google Sheet (" + new Date().toLocaleTimeString() + ").", false);
-      return true;
     }
+
+    if (!res.ok && Object.keys(data).length === 0) {
+      setAdminSyncBanner("&#9888; Saved locally; Sheet returned HTTP " + res.status + ". Check Web App access.", true);
+      return false;
+    }
+
+    const refreshed = normalizeSheetUsers(data);
+    if (refreshed && refreshed.length > 0) {
+      adminSheetUsersCache = refreshed;
+      saveUsers(refreshed);
+    }
+    if (data && data.success === false) {
+      setAdminSyncBanner("&#9888; Saved locally; Sheet rejected update: " + (data.message || "Check Apps Script handler."), true);
+      return false;
+    }
+    setAdminSyncBanner("&#10003; All changes synced automatically to Google Sheet (" + new Date().toLocaleTimeString() + ").", false);
+    return true;
   } catch (err) {
     console.warn("Sheet sync error:", err);
   }
@@ -922,15 +1013,29 @@ async function deleteAdminUserRow(idx) {
     return;
   }
 
+  const targetUsername = String(target.username || "").trim();
+  const sheetRowNumber = idx + 2; // Row 1 is header in Google Sheet
   users.splice(idx, 1);
   renderAdminUserList(users);
 
+  setAdminSyncBanner("&#8635; Deleting '" + escapeHtmlAttr(targetUsername) + "' from Google Sheet...", false);
+
   const synced = await syncUserMutationToSheet({
     action: "deleteUser",
-    username: target.username
+    deleteAction: "delete",
+    username: targetUsername,
+    targetUsername: targetUsername,
+    rowIndex: sheetRowNumber,
+    id: targetUsername
   }, users);
 
-  showToast(synced ? "Deleted '" + target.username + "' from Google Sheet!" : "Deleted '" + target.username + "' locally.");
+  if (synced) {
+    await refreshAdminUsersFromSheet(true);
+    setAdminSyncBanner("&#10003; Permanently removed '" + escapeHtmlAttr(targetUsername) + "' from Admin Panel & Google Sheet.", false);
+    showToast("Deleted '" + targetUsername + "' from Admin Panel & Google Sheet!");
+  } else {
+    showToast("Deleted '" + targetUsername + "' locally (check Google Apps Script deleteUser handler).");
+  }
 }
 
 function openAddNodeModal() {
@@ -1029,6 +1134,168 @@ function confirmRemoveNode(e) {
   }
 }
 
+function openEditNodeModal() {
+  const ch = document.getElementById('chSelect').value;
+  if (!ch || !data1[ch] || !data2[ch]) {
+    showToast("Please select a valid active chainage first!");
+    return;
+  }
+  const n1 = document.getElementById('l1Name').value || "OGL";
+  const n2 = document.getElementById('l2Name').value || "PGL";
+  const layerSelect = document.getElementById('editNodeLayerSelect');
+  layerSelect.options[0].text = n1;
+  layerSelect.options[1].text = n2;
+  layerSelect.value = "L1";
+  populateEditNodeSelect();
+  document.getElementById('editNodeModal').classList.remove('hidden');
+  document.getElementById('editNodeOffsetInput').focus();
+}
+
+function populateEditNodeSelect() {
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const nodeSelect = document.getElementById('editNodeIndexSelect');
+  nodeSelect.innerHTML = "";
+  if (!ch || !data1[ch] || !data2[ch]) return;
+  const arr = layer === "L1" ? data1[ch] : data2[ch];
+  arr.forEach((pt, idx) => {
+    const opt = document.createElement('option');
+    opt.value = idx;
+    opt.text = pt.x.toFixed(3) + " m (RL: " + pt.y.toFixed(3) + " m)";
+    nodeSelect.appendChild(opt);
+  });
+  loadSelectedEditNodeValues();
+}
+
+function loadSelectedEditNodeValues() {
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
+  const offsetInput = document.getElementById('editNodeOffsetInput');
+  const levelInput = document.getElementById('editNodeLevelInput');
+  if (!ch || !data1[ch] || !data2[ch] || isNaN(idx)) {
+    offsetInput.value = "";
+    levelInput.value = "";
+    return;
+  }
+  const arr = layer === "L1" ? data1[ch] : data2[ch];
+  if (arr[idx]) {
+    offsetInput.value = arr[idx].x;
+    levelInput.value = arr[idx].y;
+  }
+}
+
+function closeEditNodeModal() {
+  document.getElementById('editNodeModal').classList.add('hidden');
+}
+
+function confirmEditNode(e) {
+  e.preventDefault();
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
+  const newOffset = parseFloat(document.getElementById('editNodeOffsetInput').value);
+  const newLevel = parseFloat(document.getElementById('editNodeLevelInput').value);
+  if (!ch || isNaN(idx) || isNaN(newOffset) || isNaN(newLevel)) return;
+
+  const targetArray = layer === "L1" ? data1[ch] : data2[ch];
+  if (idx < 0 || idx >= targetArray.length) return;
+
+  const duplicateIdx = targetArray.findIndex((p, i) => i !== idx && Math.abs(p.x - newOffset) < 0.0001);
+  if (duplicateIdx !== -1) {
+    targetArray[duplicateIdx].y = newLevel;
+    targetArray.splice(idx, 1);
+  } else {
+    targetArray[idx] = { x: newOffset, y: newLevel };
+  }
+  targetArray.sort((a, b) => a.x - b.x);
+
+  closeEditNodeModal();
+  runAnalysis();
+  showToast("Node updated to offset " + newOffset.toFixed(3) + "m, RL " + newLevel.toFixed(3) + "m");
+}
+
+function openEditNodeModal() {
+  const ch = document.getElementById('chSelect').value;
+  if (!ch || !data1[ch] || !data2[ch]) {
+    showToast("Please select a valid active chainage first!");
+    return;
+  }
+  const n1 = document.getElementById('l1Name').value || "OGL";
+  const n2 = document.getElementById('l2Name').value || "PGL";
+  const layerSelect = document.getElementById('editNodeLayerSelect');
+  layerSelect.options[0].text = n1;
+  layerSelect.options[1].text = n2;
+  layerSelect.value = "L1";
+  populateEditNodeSelect();
+  document.getElementById('editNodeModal').classList.remove('hidden');
+  document.getElementById('editNodeOffsetInput').focus();
+}
+
+function populateEditNodeSelect() {
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const nodeSelect = document.getElementById('editNodeIndexSelect');
+  nodeSelect.innerHTML = "";
+  if (!ch || !data1[ch] || !data2[ch]) return;
+  const arr = layer === "L1" ? data1[ch] : data2[ch];
+  arr.forEach((pt, idx) => {
+    const opt = document.createElement('option');
+    opt.value = idx;
+    opt.text = pt.x.toFixed(3) + " m (RL: " + pt.y.toFixed(3) + " m)";
+    nodeSelect.appendChild(opt);
+  });
+  loadSelectedEditNodeValues();
+}
+
+function loadSelectedEditNodeValues() {
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
+  const offsetInput = document.getElementById('editNodeOffsetInput');
+  const levelInput = document.getElementById('editNodeLevelInput');
+  if (!ch || !data1[ch] || !data2[ch] || isNaN(idx)) {
+    offsetInput.value = "";
+    levelInput.value = "";
+    return;
+  }
+  const arr = layer === "L1" ? data1[ch] : data2[ch];
+  if (arr[idx]) {
+    offsetInput.value = arr[idx].x;
+    levelInput.value = arr[idx].y;
+  }
+}
+
+function closeEditNodeModal() {
+  document.getElementById('editNodeModal').classList.add('hidden');
+}
+
+function confirmEditNode(e) {
+  e.preventDefault();
+  const ch = document.getElementById('chSelect').value;
+  const layer = document.getElementById('editNodeLayerSelect').value;
+  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
+  const newOffset = parseFloat(document.getElementById('editNodeOffsetInput').value);
+  const newLevel = parseFloat(document.getElementById('editNodeLevelInput').value);
+  if (!ch || isNaN(idx) || isNaN(newOffset) || isNaN(newLevel)) return;
+
+  const targetArray = layer === "L1" ? data1[ch] : data2[ch];
+  if (idx < 0 || idx >= targetArray.length) return;
+
+  const duplicateIdx = targetArray.findIndex((p, i) => i !== idx && Math.abs(p.x - newOffset) < 0.0001);
+  if (duplicateIdx !== -1) {
+    targetArray[duplicateIdx].y = newLevel;
+    targetArray.splice(idx, 1);
+  } else {
+    targetArray[idx] = { x: newOffset, y: newLevel };
+  }
+  targetArray.sort((a, b) => a.x - b.x);
+
+  closeEditNodeModal();
+  runAnalysis();
+  showToast("Node updated to offset " + newOffset.toFixed(3) + "m, RL " + newLevel.toFixed(3) + "m");
+}
+
 let data1 = {}, data2 = {};
 let file1Name = "", file2Name = "";
 let myChart = null, massChart = null;
@@ -1076,6 +1343,7 @@ document.getElementById('f2').onchange = async (e) => {
     file2Name = e.target.files[0].name;
     document.getElementById('f2Status').innerText = file2Name;
     data2 = {};
+  document.getElementById('projectName').value = "";
     await loadCSV(e.target.files[0], data2);
     syncChainages();
     showToast("Layer 2 CSV loaded!");
@@ -1107,11 +1375,37 @@ function getElev(x, pts) {
   return null;
 }
 
+function getRequiredProjectName() {
+  const input = document.getElementById('projectName');
+  const val = (input && input.value ? input.value : "").trim();
+  if (!val) {
+    showToast("Please enter a Project Name first!");
+    if (input) {
+      input.focus();
+      input.style.borderColor = "#dc2626";
+      setTimeout(() => { input.style.borderColor = ""; }, 2000);
+    }
+    return null;
+  }
+  return val;
+}
+
+function updateProjectDisplay() {
+  const projName = (document.getElementById('projectName').value || "").trim();
+  const ch = document.getElementById('chSelect').value;
+  if (ch && data1[ch] && data2[ch]) {
+    runAnalysis();
+  } else if (projName) {
+    document.getElementById('activeChainageTitle').innerText = projName + " — Cross Section Visualizer (Scale 1:100)";
+  }
+}
+
 function runAnalysis() {
   const ch = document.getElementById('chSelect').value;
   if (!ch || !data1[ch] || !data2[ch]) return;
 
-  document.getElementById('activeChainageTitle').innerText = "Cross Section - Chainage: " + parseFloat(ch).toFixed(2) + " (Scale 1:100)";
+  const projName = (document.getElementById('projectName').value || "").trim();
+  document.getElementById('activeChainageTitle').innerText = (projName ? projName + " — " : "") + "Cross Section - Chainage: " + parseFloat(ch).toFixed(2) + " (Scale 1:100)";
   const strip = parseFloat(document.getElementById('stripDepth').value) || 0;
   const l1 = data1[ch].map(p => ({ x: p.x, y: p.y - strip }));
   const l2 = data2[ch];
@@ -1243,10 +1537,14 @@ function toggleVolume(keepVisible) {
 
     let d = 0, avgC = 0, vC = 0, avgF = 0, vF = 0;
     if (prev) {
-      d = parseFloat(ch) - parseFloat(prev.ch);
-      avgC = (aC + prev.aC) / 2; vC = avgC * d * cutFact;
-      avgF = (aF + prev.aF) / 2; vF = avgF * d * fillFact;
-      tC += vC; tF += vF; cumNet += (vC - vF);
+      d = Number((parseFloat(ch) - parseFloat(prev.ch)).toFixed(3));
+      avgC = Number(((aC + prev.aC) / 2).toFixed(3));
+      vC = Number((d * avgC * cutFact).toFixed(3));
+      avgF = Number(((aF + prev.aF) / 2).toFixed(3));
+      vF = Number((d * avgF * fillFact).toFixed(3));
+      tC = Number((tC + vC).toFixed(3));
+      tF = Number((tF + vF).toFixed(3));
+      cumNet = Number((cumNet + (vC - vF)).toFixed(3));
     }
 
     massLabels.push(ch); massData.push(cumNet);
@@ -1287,6 +1585,8 @@ function drawMassHaulChart(labels, data) {
 }
 
 function saveProjectJSON() {
+  const projName = getRequiredProjectName();
+  if (!projName) return;
   if (Object.keys(data1).length === 0 && Object.keys(data2).length === 0) {
     showToast("No data available to save!");
     return;
@@ -1294,7 +1594,9 @@ function saveProjectJSON() {
   const projectData = {
     version: "3.0",
     timestamp: new Date().toISOString(),
+    projectName: projName,
     config: {
+      projectName: projName,
       l1Name: document.getElementById('l1Name').value,
       l2Name: document.getElementById('l2Name').value,
       stripDepth: parseFloat(document.getElementById('stripDepth').value) || 0,
@@ -1311,7 +1613,8 @@ function saveProjectJSON() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = "Earthwork_Project_" + new Date().toISOString().slice(0, 10) + ".json";
+  const safeProj = projName.replace(/[^a-zA-Z0-9_-]+/g, "_");
+  a.download = safeProj + "_" + new Date().toISOString().slice(0, 10) + ".json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1328,6 +1631,8 @@ function loadProjectJSON(event) {
       const project = JSON.parse(e.target.result);
       if (!project.data1 || !project.data2) throw new Error("Invalid schema");
       data1 = project.data1; data2 = project.data2;
+      const loadedProjName = (project.projectName || (project.config && project.config.projectName) || "");
+      document.getElementById('projectName').value = loadedProjName;
       if (project.config) {
         document.getElementById('l1Name').value = project.config.l1Name || "OGL";
         document.getElementById('l2Name').value = project.config.l2Name || "PGL";
@@ -1352,6 +1657,8 @@ function loadProjectJSON(event) {
 }
 
 async function exportCSAndAreaPDF() {
+  const projLabel = getRequiredProjectName();
+  if (!projLabel) return;
   const { jsPDF } = window.jspdf;
   const common = Object.keys(data1).filter(c => data2[c]).sort((a, b) => parseFloat(a) - parseFloat(b));
   if (!common.length) { showToast("No cross-section data available!"); return; }
@@ -1364,16 +1671,19 @@ async function exportCSAndAreaPDF() {
     await new Promise(r => setTimeout(r, 200));
     if (i > 0) doc.addPage();
     doc.setFontSize(14);
-    doc.text("CROSS SECTION REPORT (Scale 1:100) - CHAINAGE: " + parseFloat(common[i]).toFixed(2) + " m", 148, 12, { align: 'center' });
+    doc.text(projLabel + " | CROSS SECTION REPORT (Scale 1:100) - CHAINAGE: " + parseFloat(common[i]).toFixed(2) + " m", 148, 12, { align: 'center' });
     doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75);
     doc.autoTable({ html: '#areaTable', startY: 98, theme: 'grid', styles: { fontSize: 7 } });
   }
-  doc.save("Earthwork_CrossSections_Report.pdf");
+  const safePdfProj = projLabel.replace(/[^a-zA-Z0-9_-]+/g, "_");
+  doc.save(safePdfProj + "_CrossSections_Report.pdf");
   document.getElementById('loader').style.display = 'none';
   showToast("PDF Export Complete!");
 }
 
 function exportFinalExcel() {
+  const projLabel = getRequiredProjectName();
+  if (!projLabel) return;
   if (!Object.keys(data1).length) { showToast("No data available to export!"); return; }
   document.getElementById('loader').style.display = 'flex';
   document.getElementById('loadStatus').innerText = "Generating Excel Workbook...";
@@ -1395,7 +1705,8 @@ function exportFinalExcel() {
     Object.keys(data2).sort((a, b) => parseFloat(a) - parseFloat(b)).forEach(ch => data2[ch].forEach(p => r2.push([ch, p.x, p.y])));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(r2), "Raw_Layer2");
 
-    XLSX.writeFile(wb, "Earthwork_Full_Project_Report.xlsx");
+    const safeXlsxProj = projLabel.replace(/[^a-zA-Z0-9_-]+/g, "_");
+    XLSX.writeFile(wb, safeXlsxProj + "_Full_Project_Report.xlsx");
     document.getElementById('loader').style.display = 'none';
     runAnalysis();
     showToast("Excel Export Complete!");
