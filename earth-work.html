@@ -317,10 +317,10 @@
         </div>
         <div class="ew-actions">
           <button id="adminPanelBtn" type="button" class="btn btn-sm btn-amber hidden" onclick="openAdminPanel()">Admin Panel</button>
-          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project (.JSON)</button>
-          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Load Project (.JSON)</label>
+          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project</button>
+          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Open Project</label>
           <input type="file" id="projectFileInput" class="hidden-file" accept=".json" onchange="loadProjectJSON(event)">
-          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Demo Data</button>
+          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Load Demo</button>
           <button type="button" class="btn btn-sm btn-danger" onclick="handleLogout()">Logout</button>
         </div>
       </div>
@@ -333,7 +333,13 @@
           </div>
 
           <div class="config-box">
-            <label>Layer 1 (OGL / Ground)</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="margin:0;">Layer 1 (OGL / Ground)</label>
+              <label style="display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#475569; cursor:pointer; margin:0;">
+                <span>Line</span>
+                <input type="color" id="l1Color" value="#059669" title="Choose Layer 1 Line Colour" onchange="updateLayerLineColors()" style="width:24px; height:20px; padding:0; border:1px solid #cbd5e1; border-radius:4px; background:transparent; cursor:pointer;">
+              </label>
+            </div>
             <input type="text" id="l1Name" value="OGL" onchange="runAnalysis()">
             <label class="file-upload-btn" for="f1">Choose CSV File for L1</label>
             <input type="file" id="f1" class="hidden-file" accept=".csv">
@@ -341,7 +347,13 @@
           </div>
 
           <div class="config-box" style="border-left-color: var(--teal-500);">
-            <label>Layer 2 (PGL / Design)</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="margin:0;">Layer 2 (PGL / Design)</label>
+              <label style="display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#475569; cursor:pointer; margin:0;">
+                <span>Line</span>
+                <input type="color" id="l2Color" value="#2563eb" title="Choose Layer 2 Line Colour" onchange="updateLayerLineColors()" style="width:24px; height:20px; padding:0; border:1px solid #cbd5e1; border-radius:4px; background:transparent; cursor:pointer;">
+              </label>
+            </div>
             <input type="text" id="l2Name" value="PGL" onchange="runAnalysis()">
             <label class="file-upload-btn" for="f2">Choose CSV File for L2</label>
             <input type="file" id="f2" class="hidden-file" accept=".csv">
@@ -375,18 +387,104 @@
         </aside>
 
         <div class="ew-main">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <h2 style="font-weight:700; font-size:1.15rem; color:var(--navy-900);" id="activeChainageTitle">Cross Section Visualizer </h2>
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-              <button type="button" class="btn btn-sm btn-navy" onclick="openAddNodeModal()">+ Add Offset</button>
-              <button type="button" class="btn btn-sm btn-amber" onclick="openEditNodeModal()">✎ Edit Offset</button>
-              <button type="button" class="btn btn-sm btn-danger" onclick="openRemoveNodeModal()">- Remove Offset</button>
-              <div id="datumLabel" class="datum-info">Datum: -- | Max RL: --</div>
+          <div class="cs-sheet-card">
+            <div class="cs-sheet-header">
+              <div class="cs-sheet-title-group">
+                <span class="cs-sheet-kicker">Engineering Cross-Section Drawing Sheet</span>
+                <h2 class="cs-sheet-title" id="activeChainageTitle">Cross Section Visualizer - Blank Project</h2>
+              </div>
+              <div class="cs-sheet-controls">
+                <button type="button" class="cs-ctrl-btn" title="Previous Chainage" onclick="stepChainage(-1)">&#9664; Prev</button>
+                <button type="button" class="cs-ctrl-btn" title="Next Chainage" onclick="stepChainage(1)">Next &#9654;</button>
+                <button type="button" id="toggleLabelsBtn" class="cs-ctrl-btn active" title="Toggle RL Data Labels" onclick="toggleRLCallouts()">RL Tags: ON</button>
+                <button type="button" id="toggleGridBtn" class="cs-ctrl-btn active" title="Toggle Engineering Grid" onclick="toggleEngGrid()">Grid: ON</button>
+                <button type="button" id="toggleCLBtn" class="cs-ctrl-btn active" title="Toggle Centre Line (CL 0.000)" onclick="toggleCentreLine()">CL: ON</button>
+                <button type="button" id="toggleRoundBtn" class="cs-ctrl-btn active" title="Cycle Dragged Node Elevation Round Off (0, 0.1, 0.01, 0.001)" onclick="cycleDragRoundOff()">Round Off: 0.001</button>
+                <button type="button" id="toggleLayerDragBtn" class="cs-ctrl-btn active" title="Toggle Active Layer Node Dragging (OGL / PGL)" onclick="cycleDragLayerMode()">OGL AND PGL</button>
+                <label class="cs-ctrl-btn" style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;" title="Horizontal Grid Spacing (Offset X in metres — Auto or custom step)">
+                  <span>H Grid:</span>
+                  <select id="hGridStepSelect" onchange="onGridAxisAdjustChange()" style="border:none; background:transparent; font:inherit; font-weight:700; color:inherit; cursor:pointer; outline:none; padding:0;">
+                    <option value="auto" selected>Auto</option>
+                    <option value="0.25">0.25 m</option>
+                    <option value="0.5">0.50 m</option>
+                    <option value="1">1.00 m</option>
+                    <option value="2">2.00 m</option>
+                    <option value="2.5">2.50 m</option>
+                    <option value="5">5.00 m</option>
+                    <option value="10">10.0 m</option>
+                  </select>
+                </label>
+                <label class="cs-ctrl-btn" style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;" title="Vertical Grid Spacing (Elevation RL in metres — Auto or custom step)">
+                  <span>V Grid:</span>
+                  <select id="vGridStepSelect" onchange="onGridAxisAdjustChange()" style="border:none; background:transparent; font:inherit; font-weight:700; color:inherit; cursor:pointer; outline:none; padding:0;">
+                    <option value="auto" selected>Auto</option>
+                    <option value="0.1">0.10 m</option>
+                    <option value="0.25">0.25 m</option>
+                    <option value="0.5">0.50 m</option>
+                    <option value="1">1.00 m</option>
+                    <option value="2">2.00 m</option>
+                    <option value="5">5.00 m</option>
+                  </select>
+                </label>
+                <label class="cs-ctrl-btn" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Adjust Engineering Grid Opacity (10% to 100%)">
+                  <span>Grid Opacity:</span>
+                  <input type="range" id="gridOpacityInput" min="0.1" max="1" step="0.05" value="0.45" oninput="onGridOpacityChange(this.value)" onchange="onGridOpacityChange(this.value)" style="width:68px; cursor:pointer; accent-color:#0f233c; vertical-align:middle;">
+                  <span id="gridOpacityVal" style="font-variant-numeric:tabular-nums; min-width:34px; text-align:right;">45%</span>
+                </label>
+                <button type="button" class="cs-ctrl-btn" title="Download High-Res PNG" onclick="exportSectionPNG()">&#128247; PNG</button>
+              </div>
             </div>
-          </div>
 
-          <div class="chart-box">
-            <canvas id="csChart"></canvas>
+            <div class="cs-metrics-strip">
+              <div class="cs-metric-pill datum">
+                <span class="cs-metric-label">Datum / Max RL</span>
+                <span class="cs-metric-val" id="datumLabel">-- / -- m</span>
+              </div>
+              <div class="cs-metric-pill cut">
+                <span class="cs-metric-label">Cut Area / Max Cut</span>
+                <span class="cs-metric-val" style="color:#dc2626;" id="metricCutSummary">0.000 m&sup2; | 0.000 m</span>
+              </div>
+              <div class="cs-metric-pill fill">
+                <span class="cs-metric-label">Fill Area / Max Fill</span>
+                <span class="cs-metric-val" style="color:#059669;" id="metricFillSummary">0.000 m&sup2; | 0.000 m</span>
+              </div>
+              <div class="cs-metric-pill">
+                <span class="cs-metric-label">Section Width (L to R)</span>
+                <span class="cs-metric-val" id="metricWidthSummary">0.000 m</span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding:10px 18px; background:#ffffff; border-bottom:1px solid #e2e8f0;">
+              <div class="cs-legend-inline">
+                <span class="cs-legend-item"><span class="cs-swatch" id="legL1Swatch" style="background:#059669;"></span><span id="legL1Name">OGL (Ground)</span></span>
+                <span class="cs-legend-item"><span class="cs-swatch" id="legL2Swatch" style="background:#2563eb;"></span><span id="legL2Name">PGL (Design)</span></span>
+                <span class="cs-legend-item"><span class="cs-swatch" style="background:rgba(220,38,38,0.28); border:1px solid #dc2626;"></span>Cut Zone</span>
+                <span class="cs-legend-item"><span class="cs-swatch" style="background:rgba(5,150,105,0.24); border:1px solid #059669;"></span>Fill Zone</span>
+                <span class="cs-legend-item"><span class="cs-swatch" style="background:#dc2626; width:2px; height:14px;"></span>CL (0.000)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button type="button" class="btn btn-sm btn-navy" onclick="openAddNodeModal()">+ Add Offset</button>
+                <button type="button" class="btn btn-sm btn-amber" onclick="openEditNodeModal()">&#9998; Edit Offset</button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="openRemoveNodeModal()">- Remove Offset</button>
+              </div>
+            </div>
+
+            <div class="cs-canvas-stage" id="csCanvasStage" style="padding:6px;">
+              <div id="csEmptyState" class="cs-empty-overlay">
+                <div class="cs-empty-icon">&#128208;</div>
+                <h3 style="margin:0 0 6px 0; color:#0f233c; font-size:1.05rem;">No Cross-Section Loaded</h3>
+                <p style="margin:0 0 14px 0; color:#475569; font-size:0.85rem; max-width:440px;">
+                  Upload Layer 1 (OGL) and Layer 2 (PGL) CSV files in the format <code>Chainage, Offset, RL</code>, or load sample survey data to inspect the interactive CAD cross-section.
+                </p>
+                <button type="button" class="btn btn-sm btn-navy" onclick="loadSampleData()">Load Sample Survey Data</button>
+              </div>
+              <canvas id="csChart"></canvas>
+            </div>
+
+            <div class="cs-sheet-footer">
+              <span><strong>Tip:</strong> Drag any survey node vertically on the chart to adjust RL in real time.</span>
+              <span id="csSheetStamp">Unique Consultancy &bull; 3-Decimal Engineering Precision</span>
+            </div>
           </div>
 
           <div id="areaSection" class="card">
@@ -1403,12 +1501,260 @@ function updateProjectDisplay() {
   }
 }
 
+let showRLCallouts = true;
+let showEngGrid = true;
+let showCentreLine = true;
+const dragRoundModes = [
+  { step: 0,    label: '0',     decimals: 3 },
+  { step: 0.1,  label: '0.1',   decimals: 1 },
+  { step: 0.01, label: '0.01',  decimals: 2 },
+  { step: 0.001,label: '0.001', decimals: 3 }
+];
+let dragRoundIdx = 3; // Default 0.001
+const dragLayerModes = ['BOTH', 'OGL', 'PGL'];
+let dragLayerModeIdx = 0; // Default: OGL AND PGL
+
+function getActiveDragLayerMode() {
+  return dragLayerModes[dragLayerModeIdx] || 'BOTH';
+}
+
+function isLayerDragAllowed(datasetIndex) {
+  const mode = getActiveDragLayerMode();
+  if (mode === 'BOTH') return true;
+  if (mode === 'OGL') return datasetIndex === 0;
+  if (mode === 'PGL') return datasetIndex === 1;
+  return true;
+}
+
+function cycleDragLayerMode() {
+  dragLayerModeIdx = (dragLayerModeIdx + 1) % dragLayerModes.length;
+  const mode = getActiveDragLayerMode();
+  const l1Label = (document.getElementById('l1Name')?.value || 'OGL').trim() || 'OGL';
+  const l2Label = (document.getElementById('l2Name')?.value || 'PGL').trim() || 'PGL';
+  const btn = document.getElementById('toggleLayerDragBtn');
+  if (btn) {
+    if (mode === 'BOTH') {
+      btn.innerText = `${l1Label} AND ${l2Label}`;
+      btn.classList.add('active');
+    } else if (mode === 'OGL') {
+      btn.innerText = `${l1Label} (Active)`;
+      btn.classList.add('active');
+    } else {
+      btn.innerText = `${l2Label} (Active)`;
+      btn.classList.add('active');
+    }
+  }
+  if (myChart && myChart.data && myChart.data.datasets && myChart.data.datasets.length >= 2) {
+    myChart.data.datasets[0].dragData = isLayerDragAllowed(0);
+    myChart.data.datasets[1].dragData = isLayerDragAllowed(1);
+    myChart.update();
+  }
+  if (mode === 'BOTH') {
+    showToast(`Node Dragging: ${l1Label} & ${l2Label} Unlocked`);
+  } else if (mode === 'OGL') {
+    showToast(`Node Dragging: ${l1Label} Active | ${l2Label} Locked`);
+  } else {
+    showToast(`Node Dragging: ${l2Label} Active | ${l1Label} Locked`);
+  }
+}
+
+function getActiveRoundMode() {
+  return dragRoundModes[dragRoundIdx] || dragRoundModes[3];
+}
+
+function roundDragElevation(rawVal) {
+  const num = Number(rawVal);
+  if (!isFinite(num)) return 0;
+  const mode = getActiveRoundMode();
+  if (!mode.step || mode.step <= 0) {
+    return Number(num.toFixed(3));
+  }
+  const snapped = Math.round(num / mode.step) * mode.step;
+  return Number(snapped.toFixed(mode.decimals));
+}
+
+function cycleDragRoundOff() {
+  dragRoundIdx = (dragRoundIdx + 1) % dragRoundModes.length;
+  const mode = getActiveRoundMode();
+  const btn = document.getElementById('toggleRoundBtn');
+  if (btn) {
+    btn.innerText = `Round Off: ${mode.label}`;
+    btn.classList.toggle('active', mode.step > 0);
+  }
+  if (myChart && myChart.options && myChart.options.plugins && myChart.options.plugins.dragData) {
+    myChart.options.plugins.dragData.round = mode.decimals;
+  }
+  showToast(`Drag Node Elevation Round Off: ${mode.label}`);
+}
+
+function stepChainage(delta) {
+  const sel = document.getElementById('chSelect');
+  if (!sel || sel.options.length <= 1) return;
+  const nextIdx = sel.selectedIndex + delta;
+  if (nextIdx >= 0 && nextIdx < sel.options.length) {
+    sel.selectedIndex = nextIdx;
+    runAnalysis();
+  }
+}
+
+function toggleRLCallouts() {
+  showRLCallouts = !showRLCallouts;
+  const btn = document.getElementById('toggleLabelsBtn');
+  if (btn) {
+    btn.innerText = showRLCallouts ? "RL Tags: ON" : "RL Tags: OFF";
+    btn.classList.toggle('active', showRLCallouts);
+  }
+  runAnalysis();
+}
+
+function toggleEngGrid() {
+  showEngGrid = !showEngGrid;
+  const btn = document.getElementById('toggleGridBtn');
+  if (btn) {
+    btn.innerText = showEngGrid ? "Grid: ON" : "Grid: OFF";
+    btn.classList.toggle('active', showEngGrid);
+  }
+  runAnalysis();
+}
+
+function getHorizontalGridStep() {
+  const raw = document.getElementById('hGridStepSelect')?.value || 'auto';
+  if (raw === 'auto') return null;
+  const num = parseFloat(raw);
+  return (isFinite(num) && num > 0) ? num : null;
+}
+
+function getVerticalGridStep() {
+  const raw = document.getElementById('vGridStepSelect')?.value || 'auto';
+  if (raw === 'auto') return null;
+  const num = parseFloat(raw);
+  return (isFinite(num) && num > 0) ? num : null;
+}
+
+function onGridAxisAdjustChange() {
+  const hVal = document.getElementById('hGridStepSelect')?.value || 'auto';
+  const vVal = document.getElementById('vGridStepSelect')?.value || 'auto';
+  if (!showEngGrid) {
+    showEngGrid = true;
+    const gBtn = document.getElementById('toggleGridBtn');
+    if (gBtn) {
+      gBtn.innerText = "Grid: ON";
+      gBtn.classList.add('active');
+    }
+  }
+  runAnalysis();
+  const hTxt = hVal === 'auto' ? 'Auto' : `${Number(hVal).toFixed(2)} m`;
+  const vTxt = vVal === 'auto' ? 'Auto' : `${Number(vVal).toFixed(2)} m`;
+  showToast(`Grid Adjusted — Horizontal: ${hTxt} | Vertical: ${vTxt}`);
+}
+
+function getGridOpacity() {
+  const raw = parseFloat(document.getElementById('gridOpacityInput')?.value);
+  if (!isFinite(raw)) return 0.45;
+  return Math.min(1, Math.max(0.05, raw));
+}
+
+function onGridOpacityChange(val) {
+  const alpha = getGridOpacity();
+  const labelEl = document.getElementById('gridOpacityVal');
+  if (labelEl) {
+    labelEl.innerText = `${Math.round(alpha * 100)}%`;
+  }
+  if (!showEngGrid) {
+    showEngGrid = true;
+    const gBtn = document.getElementById('toggleGridBtn');
+    if (gBtn) {
+      gBtn.innerText = "Grid: ON";
+      gBtn.classList.add('active');
+    }
+  }
+  if (typeof runAnalysis === 'function' && document.getElementById('chSelect')?.value) {
+    runAnalysis();
+  } else if (myChart) {
+    myChart.update();
+  }
+}
+
+function toggleCentreLine() {
+  showCentreLine = !showCentreLine;
+  const btn = document.getElementById('toggleCLBtn');
+  if (btn) {
+    btn.innerText = showCentreLine ? "CL: ON" : "CL: OFF";
+    btn.classList.toggle('active', showCentreLine);
+  }
+  runAnalysis();
+}
+
+function exportSectionPNG() {
+  const canvas = document.getElementById('csChart');
+  const ch = document.getElementById('chSelect').value;
+  if (!myChart || !ch) {
+    showToast("Load cross-section data before exporting PNG!");
+    return;
+  }
+  const projName = (document.getElementById('projectName').value || "CrossSection").trim().replace(/[^a-zA-Z0-9_-]+/g, "_");
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tCtx = tempCanvas.getContext('2d');
+  tCtx.fillStyle = '#ffffff';
+  tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+  tCtx.drawImage(canvas, 0, 0);
+
+  const link = document.createElement('a');
+  link.download = projName + "_CH_" + parseFloat(ch).toFixed(2) + ".png";
+  link.href = tempCanvas.toDataURL('image/png', 1.0);
+  link.click();
+  showToast("Cross-section PNG exported!");
+}
+
+function getLayerLineColors() {
+  const c1 = (document.getElementById('l1Color')?.value || '#059669').trim();
+  const c2 = (document.getElementById('l2Color')?.value || '#2563eb').trim();
+  return { c1, c2 };
+}
+
+function hexToRgbArray(hex, fallback) {
+  const clean = (hex || '').replace('#', '').trim();
+  if (/^[0-9a-fA-F]{6}$/.test(clean)) {
+    return [
+      parseInt(clean.slice(0, 2), 16),
+      parseInt(clean.slice(2, 4), 16),
+      parseInt(clean.slice(4, 6), 16)
+    ];
+  }
+  return fallback;
+}
+
+function updateLayerLineColors() {
+  const { c1, c2 } = getLayerLineColors();
+  const s1 = document.getElementById('legL1Swatch');
+  const s2 = document.getElementById('legL2Swatch');
+  if (s1) s1.style.background = c1;
+  if (s2) s2.style.background = c2;
+  if (myChart && myChart.data && myChart.data.datasets && myChart.data.datasets.length >= 2) {
+    myChart.data.datasets[0].borderColor = c1;
+    myChart.data.datasets[0].backgroundColor = c1;
+    myChart.data.datasets[0].pointBorderColor = c1;
+    myChart.data.datasets[1].borderColor = c2;
+    myChart.data.datasets[1].backgroundColor = c2;
+    myChart.data.datasets[1].pointBorderColor = c2;
+    myChart.update();
+  }
+  if (typeof runAnalysis === 'function' && document.getElementById('chSelect')?.value) {
+    runAnalysis();
+  }
+}
+
 function runAnalysis() {
   const ch = document.getElementById('chSelect').value;
   if (!ch || !data1[ch] || !data2[ch]) return;
 
+  const emptyOverlay = document.getElementById('csEmptyState');
+  if (emptyOverlay) emptyOverlay.classList.add('hidden');
+
   const projName = (document.getElementById('projectName').value || "").trim();
-  document.getElementById('activeChainageTitle').innerText = (projName ? projName + " — " : "") + "Chainage: " + parseFloat(ch).toFixed(2) + " ";
+  document.getElementById('activeChainageTitle').innerText = (projName ? projName + " — " : "") + "Chainage: " + parseFloat(ch).toFixed(3) + " m";
   const strip = parseFloat(document.getElementById('stripDepth').value) || 0;
   const l1 = data1[ch].map(p => ({ x: p.x, y: p.y - strip }));
   const l2 = data2[ch];
@@ -1417,6 +1763,11 @@ function runAnalysis() {
   const n2 = document.getElementById('l2Name').value || "Layer 2";
   document.getElementById('hL1').innerText = n1 + (strip > 0 ? " (-" + strip + "m)" : "");
   document.getElementById('hL2').innerText = n2;
+  const { c1: activeC1, c2: activeC2 } = getLayerLineColors();
+  if (document.getElementById('legL1Swatch')) document.getElementById('legL1Swatch').style.background = activeC1;
+  if (document.getElementById('legL2Swatch')) document.getElementById('legL2Swatch').style.background = activeC2;
+  if (document.getElementById('legL1Name')) document.getElementById('legL1Name').innerText = n1 + (strip > 0 ? " (Stripped)" : " (Ground)");
+  if (document.getElementById('legL2Name')) document.getElementById('legL2Name').innerText = n2 + " (Design)";
 
   const startX = Math.max(l1[0].x, l2[0].x), endX = Math.min(l1[l1.length - 1].x, l2[l2.length - 1].x);
   let rawX = [...new Set([...l1.map(p => p.x), ...l2.map(p => p.x)])].filter(x => x >= startX && x <= endX).sort((a, b) => a - b);
@@ -1433,13 +1784,18 @@ function runAnalysis() {
   allX.push(rawX[rawX.length - 1]);
   allX = [...new Set(allX)].sort((a, b) => a - b);
 
-  let sumC = 0, sumF = 0, tbody = document.getElementById('areaBody'), prev = null;
+  let sumC = 0, sumF = 0, maxCutDepth = 0, maxFillDepth = 0, tbody = document.getElementById('areaBody'), prev = null;
   tbody.innerHTML = "";
 
   allX.forEach((x, i) => {
     const y1 = getElev(x, l1), y2 = getElev(x, l2);
     const diff = y1 - y2;
-    const cur = { x: x, y1: y1, y2: y2, c: diff > 0.0001 ? diff : 0, f: diff < -0.0001 ? Math.abs(diff) : 0 };
+    const cutVal = diff > 0.0001 ? diff : 0;
+    const fillVal = diff < -0.0001 ? Math.abs(diff) : 0;
+    if (cutVal > maxCutDepth) maxCutDepth = cutVal;
+    if (fillVal > maxFillDepth) maxFillDepth = fillVal;
+
+    const cur = { x: x, y1: y1, y2: y2, c: cutVal, f: fillVal };
     let row = "<td>" + (i + 1) + "</td><td>" + x.toFixed(3) + "</td><td>" + y1.toFixed(3) + "</td><td>" + y2.toFixed(3) + "</td>";
     if (prev) {
       const w = cur.x - prev.x, avgC = (cur.c + prev.c) / 2, avgF = (cur.f + prev.f) / 2, aC = avgC * w, aF = avgF * w;
@@ -1458,48 +1814,574 @@ function runAnalysis() {
 
   const minVal = Math.min(...l1.map(p => p.y), ...l2.map(p => p.y));
   const maxVal = Math.max(...l1.map(p => p.y), ...l2.map(p => p.y));
-  const datum = Math.floor(minVal - 2);
-  const topLimit = Math.ceil(maxVal + 2);
+  const elevSpan = Math.max(maxVal - minVal, 0.5);
+  const vPad = Math.max(elevSpan * 0.05, 0.25);
+  const datum = Number((minVal - vPad).toFixed(3));
+  const topLimit = Number((maxVal + vPad).toFixed(3));
+  const secWidth = allX.length > 1 ? (allX[allX.length - 1] - allX[0]) : 0;
 
-  document.getElementById('datumLabel').innerText = "Datum: " + datum.toFixed(3) + " m | Max RL: " + maxVal.toFixed(3) + " m (Top: " + topLimit.toFixed(3) + " m)";
-  setTimeout(() => drawChart(l1, l2, n1, n2, ch, datum, topLimit), 30);
+  document.getElementById('datumLabel').innerText = datum.toFixed(3) + " / " + maxVal.toFixed(3) + " m";
+  if (document.getElementById('metricCutSummary')) {
+    document.getElementById('metricCutSummary').innerText = sumC.toFixed(3) + " m² | " + maxCutDepth.toFixed(3) + " m";
+  }
+  if (document.getElementById('metricFillSummary')) {
+    document.getElementById('metricFillSummary').innerText = sumF.toFixed(3) + " m² | " + maxFillDepth.toFixed(3) + " m";
+  }
+  if (document.getElementById('metricWidthSummary')) {
+    document.getElementById('metricWidthSummary').innerText = secWidth.toFixed(3) + " m";
+  }
+  if (document.getElementById('csSheetStamp')) {
+    document.getElementById('csSheetStamp').innerText = (projName || "Unique Consultancy") + " • CH " + parseFloat(ch).toFixed(3) + " m • Datum " + datum.toFixed(3) + " m";
+  }
+
+  setTimeout(() => drawChart(l1, l2, n1, n2, ch, datum, topLimit, allX), 25);
 
   if (!document.getElementById('volumeSection').classList.contains('hidden')) {
     toggleVolume(true);
   }
 }
 
-function drawChart(p1, p2, n1, n2, ch, datum, topLimit) {
+const cadCrossSectionPlugin = {
+  id: 'cadCrossSectionPlugin',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales, data } = chart;
+    if (!chartArea || !scales.x || !scales.y) return;
+    const opts = chart.options.plugins.cadCrossSection || {};
+    const allX = opts.allX || [];
+    const l1 = data.datasets[0] ? data.datasets[0].data : [];
+    const l2 = data.datasets[1] ? data.datasets[1].data : [];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+    ctx.clip();
+
+    // Project-adaptive small fine sub-grid + clear major grid when Grid is ON
+    if (opts.showGrid !== false) {
+      const xMinVal = scales.x.min;
+      const xMaxVal = scales.x.max;
+      const yMinVal = scales.y.min;
+      const yMaxVal = scales.y.max;
+
+      // Measure active project cross-section width & elevation relief across all chainages
+      const projKeys = Object.keys(data1 || {}).filter(c => data2 && data2[c]);
+      let projMaxWidth = isFinite(xMaxVal - xMinVal) ? (xMaxVal - xMinVal) : 20;
+      let projMaxRelief = isFinite(yMaxVal - yMinVal) ? (yMaxVal - yMinVal) : 5;
+      if (projKeys.length > 0) {
+        let minPWidth = Infinity, maxPWidth = 0, maxPRelief = 0;
+        projKeys.forEach(k => {
+          const pA = data1[k] || [];
+          const pB = data2[k] || [];
+          const xsAll = [...pA, ...pB].map(pt => Number(pt.x)).filter(v => isFinite(v));
+          const ysAll = [...pA, ...pB].map(pt => Number(pt.y)).filter(v => isFinite(v));
+          if (xsAll.length > 1) {
+            const w = Math.max(...xsAll) - Math.min(...xsAll);
+            if (w > 0) {
+              minPWidth = Math.min(minPWidth, w);
+              maxPWidth = Math.max(maxPWidth, w);
+            }
+          }
+          if (ysAll.length > 1) {
+            const r = Math.max(...ysAll) - Math.min(...ysAll);
+            if (r > maxPRelief) maxPRelief = r;
+          }
+        });
+        if (maxPWidth > 0) projMaxWidth = maxPWidth;
+        if (maxPRelief > 0) projMaxRelief = maxPRelief;
+      }
+
+      const niceStep = (rawStep) => {
+        const candidates = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50];
+        for (let i = 0; i < candidates.length; i++) {
+          if (candidates[i] >= rawStep * 0.99) return candidates[i];
+        }
+        return Math.ceil(rawStep);
+      };
+
+      if (isFinite(xMinVal) && isFinite(xMaxVal) && isFinite(yMinVal) && isFinite(yMaxVal) && xMaxVal > xMinVal && yMaxVal > yMinVal) {
+        const xSpan = xMaxVal - xMinVal;
+        const ySpan = yMaxVal - yMinVal;
+
+        const manualH = getHorizontalGridStep();
+        const manualV = getVerticalGridStep();
+
+        // Target ~55-75 small horizontal divisions and ~24-36 small vertical divisions tailored to active project, or exact user-selected H/V step
+        const minorXStep = manualH || niceStep(Math.max(projMaxWidth / 60, xSpan / 80));
+        const minorYStep = manualV || niceStep(Math.max(projMaxRelief / 28, ySpan / 38));
+
+        // Span vertical grid lines across the full chart X scale range (from scales.x.min to scales.x.max)
+        const scaleXMin = (typeof scales.x.min === 'number' && isFinite(scales.x.min)) ? scales.x.min : xMinVal;
+        const scaleXMax = (typeof scales.x.max === 'number' && isFinite(scales.x.max)) ? scales.x.max : xMaxVal;
+        const epsX = 1e-6;
+        const firstMinorX = Math.ceil((scaleXMin - epsX) / minorXStep) * minorXStep;
+        const firstMinorY = Math.ceil(yMinVal / minorYStep) * minorYStep;
+
+        const gridAlpha = getGridOpacity();
+        ctx.save();
+        ctx.strokeStyle = `rgba(15, 23, 42, ${(gridAlpha * 0.45).toFixed(3)})`;
+        ctx.lineWidth = 0.75;
+        ctx.beginPath();
+        const minorXCount = Math.floor((scaleXMax - firstMinorX + epsX) / minorXStep);
+        for (let idx = 0; idx <= minorXCount; idx++) {
+          const xv = Number((firstMinorX + idx * minorXStep).toFixed(6));
+          const px = Math.round(scales.x.getPixelForValue(xv)) + 0.5;
+          if (px >= chartArea.left - 1 && px <= chartArea.right + 1) {
+            ctx.moveTo(px, chartArea.top);
+            ctx.lineTo(px, chartArea.bottom);
+          }
+        }
+        for (let yv = firstMinorY; yv <= yMaxVal + minorYStep * 0.01; yv += minorYStep) {
+          const py = Math.round(scales.y.getPixelForValue(Number(yv.toFixed(6)))) + 0.5;
+          if (py >= chartArea.top && py <= chartArea.bottom) {
+            ctx.moveTo(chartArea.left, py);
+            ctx.lineTo(chartArea.right, py);
+          }
+        }
+        ctx.stroke();
+
+        // Major grid lines: exact manual step when adjusted, otherwise project-scaled major interval
+        const majorXStep = manualH ? manualH : niceStep(Math.max(minorXStep * 5, xSpan / 12));
+        const majorYStep = manualV ? manualV : niceStep(Math.max(minorYStep * 4, ySpan / 8));
+        const firstMajorX = Math.ceil((scaleXMin - epsX) / majorXStep) * majorXStep;
+        const firstMajorY = Math.ceil(yMinVal / majorYStep) * majorYStep;
+
+        ctx.strokeStyle = `rgba(15, 23, 42, ${Math.min(1, gridAlpha * 1.0).toFixed(3)})`;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        const majorXCount = Math.floor((scaleXMax - firstMajorX + epsX) / majorXStep);
+        for (let idx = 0; idx <= majorXCount; idx++) {
+          const xv = Number((firstMajorX + idx * majorXStep).toFixed(6));
+          const px = Math.round(scales.x.getPixelForValue(xv)) + 0.5;
+          if (px >= chartArea.left - 1 && px <= chartArea.right + 1) {
+            ctx.moveTo(px, chartArea.top);
+            ctx.lineTo(px, chartArea.bottom);
+          }
+        }
+        for (let yv = firstMajorY; yv <= yMaxVal + majorYStep * 0.01; yv += majorYStep) {
+          const py = Math.round(scales.y.getPixelForValue(Number(yv.toFixed(6)))) + 0.5;
+          if (py >= chartArea.top && py <= chartArea.bottom) {
+            ctx.moveTo(chartArea.left, py);
+            ctx.lineTo(chartArea.right, py);
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    // Shade Cut (L1 > L2) and Fill (L2 > L1) polygons cleanly between layers
+    if (allX.length > 1 && l1.length > 1 && l2.length > 1) {
+      for (let i = 0; i < allX.length - 1; i++) {
+        const xa = allX[i], xb = allX[i + 1];
+        const y1a = getElev(xa, l1), y2a = getElev(xa, l2);
+        const y1b = getElev(xb, l1), y2b = getElev(xb, l2);
+        if (y1a === null || y2a === null || y1b === null || y2b === null) continue;
+
+        const midDiff = ((y1a - y2a) + (y1b - y2b)) / 2;
+        if (Math.abs(midDiff) < 0.0001) continue;
+
+        ctx.beginPath();
+        ctx.moveTo(scales.x.getPixelForValue(xa), scales.y.getPixelForValue(y1a));
+        ctx.lineTo(scales.x.getPixelForValue(xb), scales.y.getPixelForValue(y1b));
+        ctx.lineTo(scales.x.getPixelForValue(xb), scales.y.getPixelForValue(y2b));
+        ctx.lineTo(scales.x.getPixelForValue(xa), scales.y.getPixelForValue(y2a));
+        ctx.closePath();
+
+        ctx.fillStyle = midDiff > 0 ? 'rgba(220, 38, 38, 0.18)' : 'rgba(5, 150, 105, 0.18)';
+        ctx.fill();
+      }
+    }
+
+    // Vertical projection lines from nodes down to Datum
+    ctx.strokeStyle = 'rgba(100, 116, 139, 0.22)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 3]);
+    l1.forEach(pt => {
+      const px = scales.x.getPixelForValue(pt.x);
+      const py = scales.y.getPixelForValue(pt.y);
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px, chartArea.bottom);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // Centreline (CL = 0.000 m) reference line
+    const zeroX = scales.x.getPixelForValue(0);
+    if (opts.showCL !== false && zeroX >= chartArea.left && zeroX <= chartArea.right) {
+      ctx.beginPath();
+      ctx.setLineDash([7, 4]);
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(zeroX, chartArea.top);
+      ctx.lineTo(zeroX, chartArea.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.restore();
+  },
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea, scales, data } = chart;
+    if (!chartArea || !scales.x || !scales.y) return;
+    const opts = chart.options.plugins.cadCrossSection || {};
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, chart.width, chart.height);
+    ctx.clip();
+
+    // CL badge at top
+    const zeroX = scales.x.getPixelForValue(0);
+    if (opts.showCL !== false && zeroX >= chartArea.left && zeroX <= chartArea.right) {
+      const tagW = 64, tagH = 18;
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(zeroX - tagW / 2, chartArea.top + 4, tagW, tagH);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 10px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('CL 0.000', zeroX, chartArea.top + 4 + tagH / 2);
+    }
+
+    // Datum reference label at bottom-left
+    ctx.fillStyle = '#0f233c';
+    ctx.font = '700 10.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('DATUM: ' + Number(opts.datum || 0).toFixed(3) + ' m', chartArea.left + 8, chartArea.bottom - 6);
+
+    // Optional RL Callout Tags on nodes
+    if (opts.showLabels) {
+      const drawNodeTags = (pts, bgColor, textColor, yOffset) => {
+        ctx.font = '600 9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        pts.forEach((pt, idx) => {
+          if (pts.length > 14 && idx % 2 !== 0 && idx !== pts.length - 1) return;
+          const px = scales.x.getPixelForValue(pt.x);
+          const py = scales.y.getPixelForValue(pt.y) + yOffset;
+          if (px < chartArea.left + 18 || px > chartArea.right - 18 || py < chartArea.top + 12 || py > chartArea.bottom - 12) return;
+          const label = Number(pt.y).toFixed(2);
+          const w = ctx.measureText(label).width + 8;
+          const h = 14;
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(px - w / 2, py - h / 2, w, h);
+          ctx.fillStyle = textColor;
+          ctx.fillText(label, px, py);
+        });
+      };
+
+      if (data.datasets[0]) drawNodeTags(data.datasets[0].data, 'rgba(5, 150, 105, 0.9)', '#ffffff', -14);
+      if (data.datasets[1]) drawNodeTags(data.datasets[1].data, 'rgba(37, 99, 235, 0.9)', '#ffffff', 14);
+    }
+
+    // Draw offset marks along the X-axis strictly from node start to node end
+    const d0Pts = (data && data.datasets && data.datasets[0] && Array.isArray(data.datasets[0].data)) ? data.datasets[0].data : [];
+    const d1Pts = (data && data.datasets && data.datasets[1] && Array.isArray(data.datasets[1].data)) ? data.datasets[1].data : [];
+    const activeNodeXs = [...d0Pts, ...d1Pts].map(pt => Number(pt && pt.x)).filter(v => isFinite(v));
+    const fallbackNodeXs = (opts.allX || []).map(Number).filter(v => isFinite(v));
+    const spanXs = activeNodeXs.length ? activeNodeXs : fallbackNodeXs;
+
+    if (spanXs.length > 0) {
+      const nodeStartX = Math.min(...spanXs);
+      const nodeEndX = Math.max(...spanXs);
+      const xMinVal = scales.x.min;
+      const xMaxVal = scales.x.max;
+      const xSpan = (isFinite(xMaxVal) && isFinite(xMinVal) && xMaxVal > xMinVal) ? (xMaxVal - xMinVal) : Math.max(nodeEndX - nodeStartX, 2);
+
+      const projKeys = Object.keys(data1 || {}).filter(c => data2 && data2[c]);
+      let projMaxWidth = Math.max(nodeEndX - nodeStartX, 1);
+      if (projKeys.length > 0) {
+        let maxPWidth = 0;
+        projKeys.forEach(k => {
+          const pA = data1[k] || [];
+          const pB = data2[k] || [];
+          const xsAll = [...pA, ...pB].map(pt => Number(pt.x)).filter(v => isFinite(v));
+          if (xsAll.length > 1) {
+            const w = Math.max(...xsAll) - Math.min(...xsAll);
+            if (w > maxPWidth) maxPWidth = w;
+          }
+        });
+        if (maxPWidth > 0) projMaxWidth = maxPWidth;
+      }
+
+      const niceStepOffset = (rawStep) => {
+        const candidates = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50];
+        for (let i = 0; i < candidates.length; i++) {
+          if (candidates[i] >= rawStep * 0.99) return candidates[i];
+        }
+        return Math.ceil(rawStep);
+      };
+
+      const manualH = (typeof getHorizontalGridStep === 'function') ? getHorizontalGridStep() : null;
+      const minorStep = manualH || niceStepOffset(Math.max(projMaxWidth / 60, xSpan / 80));
+      const markStep = manualH || niceStepOffset(Math.max(minorStep * 5, xSpan / 12));
+      const eps = 1e-6;
+
+      // Collect offset positions from nodeStartX up to nodeEndX aligned to grid step, including nodeStartX and nodeEndX
+      const markOffsets = [];
+      const pushUniqueOffset = (val) => {
+        const rounded = Number((Math.abs(val) < 1e-9 ? 0 : val).toFixed(3));
+        if (!markOffsets.some(existing => Math.abs(existing - rounded) < 1e-4)) {
+          markOffsets.push(rounded);
+        }
+      };
+
+      pushUniqueOffset(nodeStartX);
+      const firstStepVal = Math.ceil((nodeStartX - eps) / markStep) * markStep;
+      const stepCount = Math.floor((nodeEndX - firstStepVal + eps) / markStep);
+      for (let idx = 0; idx <= stepCount; idx++) {
+        const xv = firstStepVal + idx * markStep;
+        if (xv >= nodeStartX - eps && xv <= nodeEndX + eps) {
+          pushUniqueOffset(xv);
+        }
+      }
+      pushUniqueOffset(nodeEndX);
+      markOffsets.sort((a, b) => a - b);
+
+      ctx.save();
+      ctx.font = '600 10.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const markY = chartArea.bottom + 5;
+
+      markOffsets.forEach((xv) => {
+        const px = scales.x.getPixelForValue(xv);
+        if (px >= chartArea.left - 2 && px <= chartArea.right + 2) {
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(Math.round(px) + 0.5, chartArea.bottom);
+          ctx.lineTo(Math.round(px) + 0.5, chartArea.bottom + 3.5);
+          ctx.stroke();
+
+          ctx.fillStyle = '#1e293b';
+          ctx.fillText(xv.toFixed(2), px, markY);
+        }
+      });
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+};
+
+function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
   const ctx = document.getElementById('csChart').getContext('2d');
   if (myChart) myChart.destroy();
   myChart = new Chart(ctx, {
     type: 'line',
     data: {
       datasets: [
-        { label: n1, data: p1, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.1)', dragData: true, tension: 0, pointRadius: 5, pointHoverRadius: 8 },
-        { label: n2, data: p2, borderColor: '#dc2626', borderDash: [5, 5], dragData: true, tension: 0, pointRadius: 5, pointHoverRadius: 8 }
+        {
+          label: n1 + ' (Existing Ground)',
+          data: p1,
+          borderColor: getLayerLineColors().c1,
+          backgroundColor: getLayerLineColors().c1,
+          borderWidth: 2.5,
+          dragData: isLayerDragAllowed(0),
+          tension: 0,
+          pointRadius: isLayerDragAllowed(0) ? 5 : 4,
+          pointHoverRadius: isLayerDragAllowed(0) ? 8 : 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: getLayerLineColors().c1,
+          pointBorderWidth: isLayerDragAllowed(0) ? 2.5 : 1.5
+        },
+        {
+          label: n2 + ' (Design / Formation)',
+          data: p2,
+          borderColor: getLayerLineColors().c2,
+          backgroundColor: getLayerLineColors().c2,
+          borderWidth: 2.5,
+          dragData: isLayerDragAllowed(1),
+          tension: 0,
+          pointRadius: isLayerDragAllowed(1) ? 5 : 4,
+          pointHoverRadius: isLayerDragAllowed(1) ? 8 : 5,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: getLayerLineColors().c2,
+          pointBorderWidth: isLayerDragAllowed(1) ? 2.5 : 1.5
+        }
       ]
     },
+    plugins: [cadCrossSectionPlugin],
     options: {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
-      aspectRatio: 1,
+      interaction: { mode: 'nearest', axis: 'x', intersect: false },
       plugins: {
-        legend: { labels: { color: '#0f233c', font: { family: 'Poppins', size: 12 } } },
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#fbbf24',
+          bodyColor: '#f8fafc',
+          borderColor: '#334155',
+          borderWidth: 1,
+          padding: 10,
+          titleFont: { family: 'ui-monospace, SFMono-Regular, Menlo, monospace', size: 12, weight: 'bold' },
+          bodyFont: { family: 'ui-monospace, SFMono-Regular, Menlo, monospace', size: 12 },
+          callbacks: {
+            title: (items) => {
+              if (!items.length) return '';
+              const xVal = Number(items[0].parsed.x);
+              const side = xVal < 0 ? ' (Left)' : (xVal > 0 ? ' (Right)' : ' (CL)');
+              return 'Offset: ' + xVal.toFixed(3) + ' m' + side;
+            },
+            label: (ctx) => ctx.dataset.label.split(' (')[0] + ' RL: ' + Number(ctx.parsed.y).toFixed(3) + ' m',
+            afterBody: (items) => {
+              if (!items.length) return [];
+              const xVal = Number(items[0].parsed.x);
+              const y1 = getElev(xVal, p1);
+              const y2 = getElev(xVal, p2);
+              if (y1 === null || y2 === null) return [];
+              const diff = y1 - y2;
+              if (Math.abs(diff) < 0.0005) return ['Status: Grade Match (0.000 m)'];
+              return diff > 0
+                ? ['Cut Depth: ' + diff.toFixed(3) + ' m']
+                : ['Fill Depth: ' + Math.abs(diff).toFixed(3) + ' m'];
+            }
+          }
+        },
+        cadCrossSection: {
+          allX: allX || [],
+          datum: datum,
+          showLabels: showRLCallouts,
+          showCL: showCentreLine,
+          showGrid: showEngGrid
+        },
         dragData: {
-          round: 2,
+          round: getActiveRoundMode().decimals,
+          onDragStart: (e, datasetIndex, index, value) => {
+            if (!isLayerDragAllowed(datasetIndex)) {
+              const lockedName = datasetIndex === 0 ? n1 : n2;
+              showToast(`${lockedName} node dragging is locked`);
+              return false;
+            }
+          },
+          onDrag: (e, datasetIndex, index, value) => {
+            if (!isLayerDragAllowed(datasetIndex)) {
+              return false;
+            }
+          },
           onDragEnd: (e, datasetIndex, index, value) => {
-            if (datasetIndex === 0) data1[ch][index].y = value.y;
-            else data2[ch][index].y = value.y;
+            if (!isLayerDragAllowed(datasetIndex)) {
+              const lockedName = datasetIndex === 0 ? n1 : n2;
+              showToast(`${lockedName} node dragging is locked`);
+              runAnalysis();
+              return false;
+            }
+            const mode = getActiveRoundMode();
+            const strip = parseFloat(document.getElementById('stripDepth').value) || 0;
+            const roundedPlotY = roundDragElevation(value.y);
+            if (datasetIndex === 0) {
+              data1[ch][index].y = Number((roundedPlotY + strip).toFixed(3));
+            } else {
+              data2[ch][index].y = roundedPlotY;
+            }
             runAnalysis();
-            showToast("Point updated on " + (datasetIndex === 0 ? n1 : n2));
+            const dispVal = mode.step === 0 ? roundedPlotY.toFixed(3) : roundedPlotY.toFixed(mode.decimals);
+            showToast("Updated " + (datasetIndex === 0 ? n1 : n2) + " RL to " + dispVal + " m (Round Off: " + mode.label + ")");
           }
         }
       },
       scales: {
-        x: { type: 'linear', title: { display: true, text: 'Distance / Offset (m) ', color: '#475569' }, grid: { color: 'rgba(15,35,60,0.08)' }, ticks: { color: '#334155' } },
-        y: { type: 'linear', min: datum, max: topLimit, title: { display: true, text: 'Elevation (m) ', color: '#475569' }, grid: { color: 'rgba(15,35,60,0.08)' }, ticks: { color: '#334155' } }
+        x: {
+          type: 'linear',
+          min: (() => {
+            const xs = (allX || []).map(Number).filter(v => isFinite(v));
+            if (!xs.length) return undefined;
+            const minX = Math.min(...xs), maxX = Math.max(...xs);
+            const span = Math.max(maxX - minX, 2);
+            const pad = Math.max(span * 0.04, 0.35);
+            return Number((minX - pad).toFixed(3));
+          })(),
+          max: (() => {
+            const xs = (allX || []).map(Number).filter(v => isFinite(v));
+            if (!xs.length) return undefined;
+            const minX = Math.min(...xs), maxX = Math.max(...xs);
+            const span = Math.max(maxX - minX, 2);
+            const pad = Math.max(span * 0.04, 0.35);
+            return Number((maxX + pad).toFixed(3));
+          })(),
+          title: {
+            display: true,
+            text: 'Offset (m)',
+            color: '#0f233c',
+            font: { family: 'Poppins, sans-serif', size: 12, weight: '700' }
+          },
+          grid: {
+            display: false
+          },
+          ticks: {
+            display: false,
+            autoSkip: false,
+            maxRotation: 0,
+            minRotation: 0,
+            padding: 4,
+            stepSize: (() => {
+              const manualH = getHorizontalGridStep();
+              if (manualH) return manualH;
+              const xs = (allX || []).map(Number).filter(v => isFinite(v));
+              const minXVal = xs.length ? Math.min(...xs) : -10;
+              const maxXVal = xs.length ? Math.max(...xs) : 10;
+              const spanBase = Math.max(maxXVal - minXVal, 2);
+              const rawSpan = spanBase + Math.max(spanBase * 0.04, 0.35) * 2;
+              const candidates = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50];
+              const minorStep = (() => {
+                const raw = Math.max(spanBase / 60, rawSpan / 80);
+                for (let i = 0; i < candidates.length; i++) {
+                  if (candidates[i] >= raw * 0.99) return candidates[i];
+                }
+                return Math.ceil(raw);
+              })();
+              const rawMajor = Math.max(minorStep * 5, rawSpan / 12);
+              for (let i = 0; i < candidates.length; i++) {
+                if (candidates[i] >= rawMajor * 0.99) return candidates[i];
+              }
+              return Math.ceil(rawMajor);
+            })(),
+            color: '#1e293b',
+            font: { family: 'ui-monospace, SFMono-Regular, Menlo, monospace', size: 11, weight: '600' },
+            callback: (val, index, ticksArr) => {
+              const num = Number(val);
+              if (Array.isArray(ticksArr) && ticksArr.length > 2 && (index === 0 || index === ticksArr.length - 1)) {
+                return '';
+              }
+              const clean = Math.abs(num) < 1e-9 ? 0 : num;
+              return clean.toFixed(2);
+            }
+          }
+        },
+        y: {
+          type: 'linear',
+          min: datum,
+          max: topLimit,
+          title: {
+            display: true,
+            text: 'Reduced Level / RL (m)',
+            color: '#0f233c',
+            font: { family: 'Poppins, sans-serif', size: 12, weight: '700' }
+          },
+          grid: {
+            display: showEngGrid,
+            lineWidth: 1.1,
+            color: `rgba(15, 23, 42, ${Math.min(1, getGridOpacity() * 1.0).toFixed(3)})`
+          },
+          ticks: {
+            stepSize: (() => {
+              const manualV = getVerticalGridStep();
+              if (manualV) return manualV;
+              const sp = Math.max((topLimit || 0) - (datum || 0), 0.5);
+              return sp <= 10 ? 0.5 : (sp <= 25 ? 1 : 2);
+            })(),
+            color: '#1e293b',
+            font: { family: 'ui-monospace, SFMono-Regular, Menlo, monospace', size: 11, weight: '600' },
+            callback: (val) => Number(val).toFixed(3)
+          }
+        }
       }
     }
   });
@@ -1665,23 +2547,214 @@ async function exportCSAndAreaPDF() {
   const { jsPDF } = window.jspdf;
   const common = Object.keys(data1).filter(c => data2[c]).sort((a, b) => parseFloat(a) - parseFloat(b));
   if (!common.length) { showToast("No cross-section data available!"); return; }
+
   document.getElementById('loader').style.display = 'flex';
-  document.getElementById('loadStatus').innerText = "Generating PDF Section Reports...";
-  const doc = new jsPDF('l', 'mm', 'a4');
-  for (let i = 0; i < common.length; i++) {
-    document.getElementById('chSelect').value = common[i];
-    runAnalysis();
-    await new Promise(r => setTimeout(r, 200));
-    if (i > 0) doc.addPage();
-    doc.setFontSize(14);
-    doc.text(projLabel + " | CROSS SECTION REPORT - CHAINAGE: " + parseFloat(common[i]).toFixed(2) + " m", 148, 12, { align: 'center' });
-    doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75);
-    doc.autoTable({ html: '#areaTable', startY: 98, theme: 'grid', styles: { fontSize: 7 } });
+  document.getElementById('loadStatus').innerText = "Building Executive Cover & CAD Cross-Section Sheets...";
+
+  const doc = new jsPDF('l', 'mm', 'a4'); // A4 Landscape: 297 x 210 mm
+  const pageW = 297, pageH = 210;
+  const totalPages = common.length;
+  const genDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  const stripVal = parseFloat(document.getElementById('stripDepth')?.value || 0) || 0;
+  const cutFactorVal = parseFloat(document.getElementById('cutFactor')?.value || 1) || 1;
+  const fillFactorVal = parseFloat(document.getElementById('fillFactor')?.value || 1) || 1;
+  const l1Name = (document.getElementById('l1Name')?.value || 'OGL').trim();
+  const l2Name = (document.getElementById('l2Name')?.value || 'PGL').trim();
+
+  function drawCadFrame(pageNum, badgeText, subtitleText, metaItems) {
+    // Double CAD Engineering Border
+    doc.setDrawColor(15, 23, 42);
+    doc.setLineWidth(0.6);
+    doc.rect(6, 6, pageW - 12, pageH - 12);
+    doc.setLineWidth(0.2);
+    doc.rect(7.5, 7.5, pageW - 15, pageH - 15);
+
+    // Top Navy Header Bar + Amber Accent Strip
+    doc.setFillColor(15, 23, 42);
+    doc.rect(7.5, 7.5, pageW - 15, 13, 'F');
+    doc.setFillColor(245, 158, 11);
+    doc.rect(7.5, 20.5, pageW - 15, 1.2, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text("CROSS-SECTION REPORT", 12, 13.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(203, 213, 225);
+    doc.text(subtitleText ? `PROJECT: ${projLabel.toUpperCase()}  |  ${subtitleText}` : `PROJECT: ${projLabel.toUpperCase()}`, 12, 18.2);
+
+    // Right Highlight Badge
+    doc.setFillColor(245, 158, 11);
+    doc.roundedRect(pageW - 68, 9.8, 56, 8.4, 1.5, 1.5, 'F');
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text(badgeText, pageW - 40, 15.2, { align: 'center' });
+
+    // Bottom footer removed as requested
   }
+
+  // ==================== CROSS-SECTION SHEETS (SUMMARY SHEET REMOVED) ====================
+  for (let i = 0; i < common.length; i++) {
+    const ch = common[i];
+    const chFormatted = parseFloat(ch).toFixed(3);
+    document.getElementById('loadStatus').innerText = `Rendering Chainage ${chFormatted} m (${i + 1}/${common.length})...`;
+
+    document.getElementById('chSelect').value = ch;
+    runAnalysis();
+    await new Promise(r => setTimeout(r, 220));
+
+    if (i > 0) doc.addPage();
+
+    const cutAreaTxt = document.getElementById('areaTotalCut')?.innerText || '0.000';
+    const fillAreaTxt = document.getElementById('areaTotalFill')?.innerText || '0.000';
+    const datumTxt = (document.getElementById('datumLabel')?.innerText || 'Auto').replace(/^Datum:\s*/i, '');
+
+    drawCadFrame(
+      i + 1,
+      `CH: ${chFormatted} m`,
+      "",
+      [
+        `CHAINAGE: ${chFormatted} m`,
+        `DATUM RL: ${datumTxt}`,
+        `STRIPPING: ${stripVal.toFixed(3)} m`,
+        `CUT AREA: ${cutAreaTxt} m²`,
+        `FILL AREA: ${fillAreaTxt} m²`
+      ]
+    );
+
+    // Native Vector Legend Strip & Live Callouts
+    const legY = 24.5;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(11, legY, pageW - 22, 7, 'FD');
+
+    const { c1: pdfC1, c2: pdfC2 } = getLayerLineColors();
+    const legendItems = [
+      { label: `${l1Name}`, color: hexToRgbArray(pdfC1, [5, 150, 105]), type: 'line' },
+      { label: `${l2Name}`, color: hexToRgbArray(pdfC2, [37, 99, 235]), type: 'line' },
+      { label: 'Cutting', color: [254, 202, 202], type: 'box' },
+      { label: 'Filling', color: [167, 243, 208], type: 'box' }
+    ];
+    if (showCentreLine) {
+      legendItems.push({ label: 'CL (0.000)', color: [220, 38, 38], type: 'dashed' });
+    }
+    let lx = 14;
+    doc.setFontSize(6.9);
+    doc.setFont('helvetica', 'bold');
+    legendItems.forEach(item => {
+      if (item.type === 'line') {
+        doc.setDrawColor(...item.color);
+        doc.setLineWidth(1.2);
+        doc.line(lx, legY + 3.5, lx + 5.5, legY + 3.5);
+      } else if (item.type === 'dashed') {
+        doc.setDrawColor(...item.color);
+        doc.setLineWidth(0.9);
+        doc.line(lx, legY + 3.5, lx + 2.2, legY + 3.5);
+        doc.line(lx + 3.3, legY + 3.5, lx + 5.5, legY + 3.5);
+      } else {
+        doc.setFillColor(...item.color);
+        doc.rect(lx, legY + 1.8, 5.5, 3.4, 'F');
+      }
+      doc.setTextColor(30, 41, 59);
+      doc.text(item.label, lx + 7, legY + 4.6);
+      lx += 38;
+    });
+
+    doc.setTextColor(185, 28, 28);
+    doc.text(`CUT AREA: ${cutAreaTxt} m²`, pageW - 78, legY + 4.6);
+    doc.setTextColor(4, 120, 87);
+    doc.text(`FILL AREA: ${fillAreaTxt} m²`, pageW - 42, legY + 4.6);
+
+    // High-Resolution Cross-Section Canvas Image (with crisp white background & active CL/Grid state)
+    const srcCanvas = document.getElementById('csChart');
+    const tmpPdfCanvas = document.createElement('canvas');
+    tmpPdfCanvas.width = srcCanvas.width;
+    tmpPdfCanvas.height = srcCanvas.height;
+    const tmpPdfCtx = tmpPdfCanvas.getContext('2d');
+    tmpPdfCtx.fillStyle = '#ffffff';
+    tmpPdfCtx.fillRect(0, 0, tmpPdfCanvas.width, tmpPdfCanvas.height);
+    tmpPdfCtx.drawImage(srcCanvas, 0, 0);
+    const chartImg = tmpPdfCanvas.toDataURL('image/png', 1.0);
+
+    const boxX = 12.5, boxY = 34.5, boxW = pageW - 25, boxH = 73;
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.3);
+    doc.rect(11, 33, pageW - 22, 76);
+    doc.addImage(chartImg, 'PNG', boxX, boxY, boxW, boxH);
+
+    // Overlay crisp vector CL (0.000 m) reference line & badge on PDF when CL: ON
+    if (showCentreLine && myChart && myChart.scales && myChart.scales.x && myChart.chartArea && srcCanvas.clientWidth > 0) {
+      const zeroPx = myChart.scales.x.getPixelForValue(0);
+      const cArea = myChart.chartArea;
+      if (zeroPx >= cArea.left && zeroPx <= cArea.right) {
+        const scaleX = boxW / srcCanvas.clientWidth;
+        const scaleY = boxH / srcCanvas.clientHeight;
+        const pdfClX = boxX + zeroPx * scaleX;
+        const pdfTopY = boxY + cArea.top * scaleY;
+        const pdfBotY = boxY + cArea.bottom * scaleY;
+
+        doc.setDrawColor(220, 38, 38);
+        doc.setLineWidth(0.45);
+        if (typeof doc.setLineDashPattern === 'function') {
+          doc.setLineDashPattern([2, 1.2], 0);
+        }
+        doc.line(pdfClX, pdfTopY, pdfClX, pdfBotY);
+        if (typeof doc.setLineDashPattern === 'function') {
+          doc.setLineDashPattern([], 0);
+        }
+
+        // Vector CL 0.000 tag at top of plot area
+        const tagW = 16, tagH = 4.2;
+        doc.setFillColor(220, 38, 38);
+        doc.rect(pdfClX - tagW / 2, pdfTopY + 1, tagW, tagH, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.2);
+        doc.text('CL 0.000', pdfClX, pdfTopY + 3.8, { align: 'center' });
+      }
+    }
+
+    // Color-Coded Area Calculation Breakdown Table
+    doc.autoTable({
+      html: '#areaTable',
+      startY: 112,
+      margin: { left: 11, right: 11, bottom: 11 },
+      theme: 'grid',
+      styles: { fontSize: 6.8, cellPadding: 1.2, halign: 'right', textColor: [30, 41, 59], lineColor: [203, 213, 225] },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+      footStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      didParseCell: function (data) {
+        if (data.section === 'head') {
+          const txt = (data.cell.text || []).join(' ').toLowerCase();
+          if (txt.includes('cut')) data.cell.styles.fillColor = [185, 28, 28];
+          if (txt.includes('fill')) data.cell.styles.fillColor = [4, 120, 87];
+        }
+        if (data.section === 'body') {
+          const val = parseFloat((data.cell.text || ['0'])[0]);
+          const hdr = (data.table.head[0]?.cells[data.column.index]?.text || []).join(' ').toLowerCase();
+          if (!isNaN(val) && val > 0) {
+            if (hdr.includes('cut')) {
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.textColor = [185, 28, 28];
+              data.cell.styles.fillColor = [254, 242, 242];
+            } else if (hdr.includes('fill')) {
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.textColor = [4, 120, 87];
+              data.cell.styles.fillColor = [236, 253, 245];
+            }
+          }
+        }
+      }
+    });
+  }
+
   const safePdfProj = projLabel.replace(/[^a-zA-Z0-9_-]+/g, "_");
-  doc.save(safePdfProj + "_CrossSections_Report.pdf");
+  doc.save(`${safePdfProj}_CAD_CrossSections_Report.pdf`);
   document.getElementById('loader').style.display = 'none';
-  showToast("PDF Export Complete!");
+  showToast("CAD Cross-Section PDF Report Exported!");
 }
 
 function exportFinalExcel() {
@@ -1727,7 +2800,12 @@ function loadBlankProject() {
   document.getElementById('f2Status').innerText = "No file loaded";
   document.getElementById('chSelect').innerHTML = '<option value="">No Chainages (Blank Project)</option>';
   document.getElementById('activeChainageTitle').innerText = "Cross Section Visualizer - Blank Project";
-  document.getElementById('datumLabel').innerText = "Datum: -- | Max RL: --";
+  document.getElementById('datumLabel').innerText = "-- / -- m";
+  if (document.getElementById('metricCutSummary')) document.getElementById('metricCutSummary').innerText = "0.000 m² | 0.000 m";
+  if (document.getElementById('metricFillSummary')) document.getElementById('metricFillSummary').innerText = "0.000 m² | 0.000 m";
+  if (document.getElementById('metricWidthSummary')) document.getElementById('metricWidthSummary').innerText = "0.000 m";
+  const emptyOverlay = document.getElementById('csEmptyState');
+  if (emptyOverlay) emptyOverlay.classList.remove('hidden');
   document.getElementById('areaBody').innerHTML = "";
   document.getElementById('areaTotalCut').innerText = "0.000";
   document.getElementById('areaTotalFill').innerText = "0.000";
