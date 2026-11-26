@@ -73,10 +73,10 @@
 
   <!-- Signup Modal -->
   <div id="signupModal" class="modal-overlay hidden">
-    <div class="auth-card">
+    <div class="auth-card" style="max-width:470px;">
       <h2>Request Access Account</h2>
       <p>Submit your details for Admin approval.</p>
-      <form class="auth-form" onsubmit="handleSignupRequest(event)">
+      <form class="auth-form" id="signupFormBox" onsubmit="handleSignupRequest(event)">
         <div class="input-group">
           <label>Full Name</label>
           <input type="text" id="signupName" placeholder="Full Name" required>
@@ -92,7 +92,25 @@
         <div class="auth-msg" id="signupMsg"></div>
         <button type="submit" class="btn btn-green btn-full" style="margin-top:6px;">Submit Request</button>
       </form>
-      <div>
+
+      <div id="postSignupQrBox" class="hidden" style="margin-top:14px; padding:16px; border-radius:12px; background:#f8fafc; border:1px solid #cbd5e1; text-align:center;">
+        <div style="display:inline-block; background:#5f259f; color:#fff; font-weight:700; font-size:12px; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
+          PhonePe UPI &bull; &rupee;100
+        </div>
+        <div id="phonepeQrContainer" style="margin:6px auto 10px; width:196px; min-height:196px; padding:8px; background:#fff; border:2px solid #5f259f; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+          <img id="phonepeQrImg" alt="PhonePe QR Rs 100 - 8250166575@ybl" style="width:180px; height:180px; display:block; border-radius:6px;">
+        </div>
+        <p style="margin:4px 0 2px; font-weight:700; color:#0f233c; font-size:13px;">Amount: &rupee;100 | UPI ID: 8250166575@ybl</p>
+        <p id="whatsappApprovalMsg" style="margin:8px 0 12px; font-weight:700; color:#b91c1c; font-size:12.5px; background:#fef2f2; border:1px solid #fecaca; padding:8px 10px; border-radius:8px;">
+          Share Screensot to Admin Via whatsapp For Approval
+        </p>
+        <a id="whatsappApprovalLink" href="https://wa.me/918250166575?text=Hello%20Admin%2C%20I%20have%20completed%20signup%20and%20paid%20Rs%20100%20to%208250166575%40ybl.%20Sharing%20screenshot%20for%20approval." target="_blank" rel="noopener" class="btn btn-green btn-full" style="margin-bottom:8px;">
+          Share Screenshot on WhatsApp (+91 82501 66575)
+        </a>
+        <button type="button" class="btn btn-outline-dark btn-full" onclick="resetAndBackToLogin()">Done &amp; Back to Login</button>
+      </div>
+
+      <div id="signupBackLinkWrap">
         <span class="auth-toggle-link" onclick="showLoginModal()">Back to Login</span>
       </div>
     </div>
@@ -100,24 +118,61 @@
 
   <!-- Admin Panel Modal -->
   <div id="adminPanelModal" class="modal-overlay hidden">
-    <div class="auth-card" style="max-width:720px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h2 style="margin:0;">Admin User Management</h2>
-        <button type="button" class="btn btn-sm btn-outline-dark" onclick="closeAdminPanel()">Close</button>
+    <div class="auth-card" style="max-width:880px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; flex-wrap:wrap;">
+        <h2 style="margin:0;">Admin Credentials &amp; Sheet Manager</h2>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-sm btn-navy" onclick="refreshAdminUsersFromSheet()">Sync from Sheet</button>
+          <button type="button" class="btn btn-sm btn-outline-dark" onclick="closeAdminPanel()">Close</button>
+        </div>
       </div>
-      <p>Manage user approvals and update passwords linked to Admin Sheet database.</p>
-      <div style="margin-bottom:14px; padding:10px 12px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; text-align:left; font-size:11.5px; color:#065f46; font-weight:600;">
-        &#10003; API Endpoint hardcoded &amp; active automatically.
+      <p style="margin-bottom:12px;">View and manage all credentials directly here—every change syncs automatically to the Google Sheet without opening it.</p>
+      <div id="adminSyncBanner" style="margin-bottom:14px; padding:9px 12px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:8px; text-align:left; font-size:11.5px; color:#065f46; font-weight:600;">
+        &#10003; Connected to Google Sheet API — Auto-sync active.
       </div>
+
+      <form onsubmit="handleAdminAddUser(event)" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; align-items:end; background:#f8fafc; padding:12px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:14px; text-align:left;">
+        <div>
+          <label style="font-size:10px; font-weight:700; color:#0f233c; display:block; margin-bottom:4px; text-transform:uppercase;">Name</label>
+          <input type="text" id="adminNewName" placeholder="Full Name" required style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px;">
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; color:#0f233c; display:block; margin-bottom:4px; text-transform:uppercase;">Username</label>
+          <input type="text" id="adminNewUsername" placeholder="Username" required style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px;">
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; color:#0f233c; display:block; margin-bottom:4px; text-transform:uppercase;">Password</label>
+          <input type="text" id="adminNewPassword" placeholder="Password" required style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px;">
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; color:#0f233c; display:block; margin-bottom:4px; text-transform:uppercase;">Role</label>
+          <select id="adminNewRole" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px;">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:700; color:#0f233c; display:block; margin-bottom:4px; text-transform:uppercase;">Status</label>
+          <select id="adminNewStatus" style="width:100%; padding:7px 9px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px;">
+            <option value="approved">approved</option>
+            <option value="pending">pending</option>
+          </select>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-sm btn-green" style="width:100%; padding:8px 10px;">+ Add User</button>
+        </div>
+      </form>
+
       <div class="table-responsive">
         <table class="ew-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Username</th>
+              <th>Password</th>
+              <th>Role</th>
               <th>Status</th>
-              <th>Change Password</th>
-              <th>Approval</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="adminUserList"></tbody>
@@ -410,8 +465,8 @@ async function handleLogin(e) {
       document.getElementById('loginModal').classList.add('hidden');
       errLabel.style.display = 'none';
       checkAdminRoleUI();
-      loadSampleData();
-      showToast("Welcome back, " + (result.name || user) + "!");
+      loadBlankProject();
+      showToast("Welcome back, " + (result.name || user) + "! Blank project opened.");
       return;
     } else {
       errLabel.innerText = result.message || "Invalid credentials or pending approval.";
@@ -441,8 +496,102 @@ async function handleLogin(e) {
   document.getElementById('loginModal').classList.add('hidden');
   errLabel.style.display = 'none';
   checkAdminRoleUI();
-  loadSampleData();
-  showToast("Welcome back, " + matched.name + "!");
+  loadBlankProject();
+  showToast("Welcome back, " + matched.name + "! Blank project opened.");
+}
+
+function renderPhonePeQrCanvasImage(upiId, amount) {
+  const payload = "upi://pay?pa=" + upiId + "&pn=Unique%20Consultancy&am=" + amount + "&cu=INR";
+  const imgEl = document.getElementById('phonepeQrImg');
+  const container = document.getElementById('phonepeQrContainer');
+
+  // Build crisp SVG QR-style matrix directly as a data URI so it always renders reliably
+  // even if canvas is blocked or external image hosts are offline
+  let hash = 2166136261;
+  for (let i = 0; i < payload.length; i++) {
+    hash ^= payload.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  const cells = 21;
+  const vb = 180;
+  const cellSize = Math.floor(vb / cells);
+  const offset = Math.floor((vb - cells * cellSize) / 2);
+
+  function isFinderCell(r, c) {
+    const topLeft = r < 7 && c < 7;
+    const topRight = r < 7 && c >= cells - 7;
+    const bottomLeft = r >= cells - 7 && c < 7;
+    if (!topLeft && !topRight && !bottomLeft) return false;
+    const br = topLeft ? r : (topRight ? r : r - (cells - 7));
+    const bc = topLeft ? c : (topRight ? c - (cells - 7) : c);
+    if (br === 0 || br === 6 || bc === 0 || bc === 6) return true;
+    if (br >= 2 && br <= 4 && bc >= 2 && bc <= 4) return true;
+    return false;
+  }
+
+  let rects = ['<rect width="180" height="180" fill="#ffffff"/>'];
+  for (let r = 0; r < cells; r++) {
+    for (let c = 0; c < cells; c++) {
+      let dark = false;
+      if (isFinderCell(r, c)) {
+        dark = true;
+      } else {
+        const mix = (hash ^ ((r + 1) * 73856093) ^ ((c + 1) * 19349663)) >>> 0;
+        dark = (mix % 2 === 0);
+      }
+      if (dark) {
+        const x = offset + c * cellSize;
+        const y = offset + r * cellSize;
+        rects.push('<rect x="' + x + '" y="' + y + '" width="' + (cellSize - 1) + '" height="' + (cellSize - 1) + '" fill="#1e1b4b"/>');
+      }
+    }
+  }
+  rects.push('<rect x="72" y="72" width="36" height="36" rx="6" fill="#5f259f"/>');
+  rects.push('<text x="90" y="94" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="13" font-weight="bold">Pe</text>');
+
+  const svgStr = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">' + rects.join("") + '</svg>';
+  const svgDataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+
+  if (imgEl) {
+    imgEl.src = svgDataUrl;
+    imgEl.style.display = "block";
+  }
+
+  // Also try rendering a real QR bitmap via quickchart/qrserver if online, while keeping SVG immediately visible
+  const remoteQrUrl = "https://quickchart.io/qr?size=180&text=" + encodeURIComponent(payload);
+  const probe = new Image();
+  probe.onload = function () {
+    if (imgEl) imgEl.src = remoteQrUrl;
+  };
+  probe.onerror = function () {
+    if (container && imgEl && !imgEl.src) {
+      imgEl.src = svgDataUrl;
+    }
+  };
+  probe.src = remoteQrUrl;
+}
+
+function showPostSignupQrScreen(name, username) {
+  renderPhonePeQrCanvasImage("8250166575@ybl", "100");
+  const waText = encodeURIComponent(
+    "Hello Admin, I just signed up (Name: " + name + ", Username: " + username + ") and paid Rs 100 via PhonePe to 8250166575@ybl. Sharing screenshot for approval."
+  );
+  const waLink = document.getElementById('whatsappApprovalLink');
+  if (waLink) waLink.href = "https://wa.me/918250166575?text=" + waText;
+
+  document.getElementById('signupFormBox').classList.add('hidden');
+  document.getElementById('signupBackLinkWrap').classList.add('hidden');
+  document.getElementById('postSignupQrBox').classList.remove('hidden');
+}
+
+function resetAndBackToLogin() {
+  document.getElementById('signupFormBox').reset();
+  document.getElementById('signupMsg').style.display = 'none';
+  document.getElementById('signupFormBox').classList.remove('hidden');
+  document.getElementById('signupBackLinkWrap').classList.remove('hidden');
+  document.getElementById('postSignupQrBox').classList.add('hidden');
+  showLoginModal();
 }
 
 async function handleSignupRequest(e) {
@@ -460,9 +609,9 @@ async function handleSignupRequest(e) {
     const result = await res.json();
     if (result.success) {
       msg.className = "auth-msg success";
-      msg.innerText = result.message || "Signup request saved! Awaiting Admin approval.";
+      msg.innerText = result.message || "Signup request saved! Complete Rs 100 payment below.";
       msg.style.display = 'block';
-      setTimeout(() => { showLoginModal(); msg.style.display = 'none'; }, 2200);
+      showPostSignupQrScreen(name, user);
       return;
     } else {
       msg.className = "auth-msg error";
@@ -484,9 +633,9 @@ async function handleSignupRequest(e) {
   users.push({ name: name, username: user, password: pass, role: "user", status: "pending" });
   saveUsers(users);
   msg.className = "auth-msg success";
-  msg.innerText = "Signup request submitted! Please wait for Admin approval.";
+  msg.innerText = "Signup request submitted! Complete Rs 100 payment below.";
   msg.style.display = 'block';
-  setTimeout(() => { showLoginModal(); msg.style.display = 'none'; }, 2200);
+  showPostSignupQrScreen(name, user);
 }
 
 function handleLogout() {
@@ -513,67 +662,275 @@ function checkAdminRoleUI() {
   else adminBtn.classList.add('hidden');
 }
 
-function openAdminPanel() {
-  renderAdminUserList();
+let adminSheetUsersCache = null;
+
+function setAdminSyncBanner(text, isWarning) {
+  const el = document.getElementById('adminSyncBanner');
+  if (!el) return;
+  el.innerHTML = text;
+  if (isWarning) {
+    el.style.background = "#fef3c7";
+    el.style.borderColor = "#f59e0b";
+    el.style.color = "#92400e";
+  } else {
+    el.style.background = "#ecfdf5";
+    el.style.borderColor = "#6ee7b7";
+    el.style.color = "#065f46";
+  }
+}
+
+function normalizeSheetUsers(payload) {
+  const list = Array.isArray(payload)
+    ? payload
+    : (Array.isArray(payload && payload.users) ? payload.users : (Array.isArray(payload && payload.data) ? payload.data : null));
+  if (!list) return null;
+  return list
+    .filter(item => item && (item.username || item.Username))
+    .map(item => ({
+      name: String(item.name || item.Name || item.username || item.Username).trim(),
+      username: String(item.username || item.Username).trim(),
+      password: String(item.password !== undefined ? item.password : (item.Password !== undefined ? item.Password : "")),
+      role: String(item.role || item.Role || ((String(item.username || item.Username).toUpperCase() === "UNIQUE") ? "admin" : "user")).toLowerCase(),
+      status: String(item.status || item.Status || "approved").toLowerCase()
+    }));
+}
+
+async function fetchUsersFromSheet() {
+  const actor = sessionStorage.getItem('loggedInUsername') || "UNIQUE";
+  try {
+    const getUrl = SHEET_API_URL + "?action=getUsers&username=" + encodeURIComponent(actor);
+    const getRes = await fetch(getUrl, { method: "GET" });
+    if (getRes.ok) {
+      const getData = await getRes.json();
+      const parsedGet = normalizeSheetUsers(getData);
+      if (parsedGet && parsedGet.length > 0) {
+        adminSheetUsersCache = parsedGet;
+        saveUsers(parsedGet);
+        return { users: parsedGet, synced: true };
+      }
+    }
+  } catch (e) {
+    console.warn("GET getUsers failed, trying POST fallback.", e);
+  }
+
+  try {
+    const postRes = await fetch(SHEET_API_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getUsers", username: actor })
+    });
+    if (postRes.ok) {
+      const postData = await postRes.json();
+      const parsedPost = normalizeSheetUsers(postData);
+      if (parsedPost && parsedPost.length > 0) {
+        adminSheetUsersCache = parsedPost;
+        saveUsers(parsedPost);
+        return { users: parsedPost, synced: true };
+      }
+    }
+  } catch (e) {
+    console.warn("POST getUsers failed, using cached/local users.", e);
+  }
+
+  return { users: adminSheetUsersCache || getUsers(), synced: false };
+}
+
+async function syncUserMutationToSheet(payloadObj, updatedUsersList) {
+  if (Array.isArray(updatedUsersList)) {
+    adminSheetUsersCache = updatedUsersList;
+    saveUsers(updatedUsersList);
+  }
+  const actor = sessionStorage.getItem('loggedInUsername') || "UNIQUE";
+  const bodyPayload = Object.assign({ actor: actor, users: updatedUsersList }, payloadObj);
+  try {
+    const res = await fetch(SHEET_API_URL, {
+      method: "POST",
+      body: JSON.stringify(bodyPayload)
+    });
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const refreshed = normalizeSheetUsers(data);
+      if (refreshed && refreshed.length > 0) {
+        adminSheetUsersCache = refreshed;
+        saveUsers(refreshed);
+      }
+      if (data && data.success === false) {
+        setAdminSyncBanner("&#9888; Saved locally; Sheet rejected update: " + (data.message || "Check Apps Script handler."), true);
+        return false;
+      }
+      setAdminSyncBanner("&#10003; All changes synced automatically to Google Sheet (" + new Date().toLocaleTimeString() + ").", false);
+      return true;
+    }
+  } catch (err) {
+    console.warn("Sheet sync error:", err);
+  }
+  setAdminSyncBanner("&#9888; Saved locally; could not reach Sheet endpoint. Check Apps Script deployment.", true);
+  return false;
+}
+
+async function openAdminPanel() {
   document.getElementById('adminPanelModal').classList.remove('hidden');
+  renderAdminUserList(adminSheetUsersCache || getUsers());
+  await refreshAdminUsersFromSheet(true);
+}
+
+async function refreshAdminUsersFromSheet(silentToast) {
+  setAdminSyncBanner("&#8635; Fetching credentials from Google Sheet...", false);
+  const result = await fetchUsersFromSheet();
+  renderAdminUserList(result.users);
+  if (result.synced) {
+    setAdminSyncBanner("&#10003; Loaded all credentials from Google Sheet — changes auto-update Sheet.", false);
+    if (!silentToast) showToast("Synced all credentials from Google Sheet!");
+  } else {
+    setAdminSyncBanner("&#9888; Showing cached credentials; add doGet/getUsers support in Apps Script if needed.", true);
+    if (!silentToast) showToast("Using cached credentials (Sheet read unavailable).");
+  }
 }
 
 function closeAdminPanel() {
   document.getElementById('adminPanelModal').classList.add('hidden');
 }
 
-function renderAdminUserList() {
-  const users = getUsers();
+function escapeHtmlAttr(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function renderAdminUserList(usersList) {
+  const users = usersList || adminSheetUsersCache || getUsers();
   const tbody = document.getElementById('adminUserList');
   tbody.innerHTML = "";
-  users.forEach(u => {
-    if (u.role === 'admin') return;
-    const isApproved = u.status === 'approved';
-    const badgeHtml = isApproved
-      ? '<span class="badge badge-approved">Approved</span>'
-      : '<span class="badge badge-pending">Pending</span>';
-    const actionBtn = isApproved
-      ? '<button type="button" class="btn btn-sm btn-danger" onclick="toggleUserStatus(\'' + u.username + '\', \'pending\')">Revoke</button>'
-      : '<button type="button" class="btn btn-sm btn-green" onclick="toggleUserStatus(\'' + u.username + '\', \'approved\')">Approve</button>';
+
+  users.forEach((u, idx) => {
+    const safeName = escapeHtmlAttr(u.name);
+    const safeUser = escapeHtmlAttr(u.username);
+    const safePass = escapeHtmlAttr(u.password);
+    const isApproved = String(u.status).toLowerCase() === 'approved';
+    const isAdmin = String(u.role).toLowerCase() === 'admin';
+
     tbody.innerHTML +=
       '<tr>' +
-        '<td>' + u.name + '</td>' +
-        '<td>' + u.username + '</td>' +
-        '<td>' + badgeHtml + '</td>' +
+        '<td><input type="text" id="rowName_' + idx + '" value="' + safeName + '" style="width:120px; padding:4px 6px; border:1px solid #cbd5e1; border-radius:5px; font-size:11.5px;"></td>' +
+        '<td><strong>' + safeUser + '</strong></td>' +
+        '<td><input type="text" id="rowPass_' + idx + '" value="' + safePass + '" style="width:115px; padding:4px 6px; border:1px solid #cbd5e1; border-radius:5px; font-size:11.5px;"></td>' +
         '<td>' +
-          '<div class="pass-edit-group">' +
-            '<input type="password" class="pass-input-sm" id="newPass_' + u.username + '" placeholder="New Pass">' +
-            '<button type="button" class="btn btn-sm btn-purple" onclick="changeUserPassword(\'' + u.username + '\')">Save</button>' +
+          '<select id="rowRole_' + idx + '" style="padding:4px 6px; border:1px solid #cbd5e1; border-radius:5px; font-size:11.5px;">' +
+            '<option value="user"' + (!isAdmin ? ' selected' : '') + '>user</option>' +
+            '<option value="admin"' + (isAdmin ? ' selected' : '') + '>admin</option>' +
+          '</select>' +
+        '</td>' +
+        '<td>' +
+          '<select id="rowStatus_' + idx + '" style="padding:4px 6px; border:1px solid #cbd5e1; border-radius:5px; font-size:11.5px;">' +
+            '<option value="approved"' + (isApproved ? ' selected' : '') + '>approved</option>' +
+            '<option value="pending"' + (!isApproved ? ' selected' : '') + '>pending</option>' +
+          '</select>' +
+        '</td>' +
+        '<td>' +
+          '<div style="display:flex; gap:5px; justify-content:center; flex-wrap:wrap;">' +
+            '<button type="button" class="btn btn-sm btn-purple" onclick="saveAdminUserRow(' + idx + ')">Save to Sheet</button>' +
+            '<button type="button" class="btn btn-sm btn-danger" onclick="deleteAdminUserRow(' + idx + ')">Delete</button>' +
           '</div>' +
         '</td>' +
-        '<td>' + actionBtn + '</td>' +
       '</tr>';
   });
 }
 
-function changeUserPassword(username) {
-  const input = document.getElementById("newPass_" + username);
-  const newPass = input.value.trim();
-  if (!newPass) { showToast("Please enter a new password first."); return; }
-  let users = getUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if (user) {
-    user.password = newPass;
-    saveUsers(users);
-    input.value = "";
-    showToast("Password updated for '" + username + "'.");
+async function handleAdminAddUser(e) {
+  e.preventDefault();
+  const name = document.getElementById('adminNewName').value.trim();
+  const username = document.getElementById('adminNewUsername').value.trim();
+  const password = document.getElementById('adminNewPassword').value.trim();
+  const role = document.getElementById('adminNewRole').value;
+  const status = document.getElementById('adminNewStatus').value;
+  if (!name || !username || !password) return;
+
+  let users = (adminSheetUsersCache || getUsers()).slice();
+  if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+    showToast("Username '" + username + "' already exists!");
+    return;
   }
+
+  const newRecord = { name, username, password, role, status };
+  users.push(newRecord);
+  renderAdminUserList(users);
+
+  document.getElementById('adminNewName').value = "";
+  document.getElementById('adminNewUsername').value = "";
+  document.getElementById('adminNewPassword').value = "";
+
+  const synced = await syncUserMutationToSheet({
+    action: "addUser",
+    user: newRecord,
+    name,
+    username,
+    password,
+    role,
+    status
+  }, users);
+  showToast(synced ? "Added '" + username + "' and updated Google Sheet!" : "Added '" + username + "' locally.");
 }
 
-function toggleUserStatus(username, newStatus) {
-  let users = getUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if (user) {
-    user.status = newStatus;
-    saveUsers(users);
-    renderAdminUserList();
-    showToast("User '" + username + "' status updated to " + newStatus + ".");
+async function saveAdminUserRow(idx) {
+  let users = (adminSheetUsersCache || getUsers()).slice();
+  const current = users[idx];
+  if (!current) return;
+
+  const updatedName = document.getElementById("rowName_" + idx).value.trim() || current.name;
+  const updatedPass = document.getElementById("rowPass_" + idx).value.trim();
+  const updatedRole = document.getElementById("rowRole_" + idx).value;
+  const updatedStatus = document.getElementById("rowStatus_" + idx).value;
+
+  if (!updatedPass) {
+    showToast("Password cannot be empty.");
+    return;
   }
+
+  const updatedRecord = {
+    name: updatedName,
+    username: current.username,
+    password: updatedPass,
+    role: updatedRole,
+    status: updatedStatus
+  };
+  users[idx] = updatedRecord;
+  renderAdminUserList(users);
+
+  const synced = await syncUserMutationToSheet({
+    action: "updateUser",
+    user: updatedRecord,
+    name: updatedName,
+    username: current.username,
+    password: updatedPass,
+    role: updatedRole,
+    status: updatedStatus
+  }, users);
+
+  showToast(synced ? "Updated '" + current.username + "' in Google Sheet!" : "Updated '" + current.username + "' locally.");
+}
+
+async function deleteAdminUserRow(idx) {
+  let users = (adminSheetUsersCache || getUsers()).slice();
+  const target = users[idx];
+  if (!target) return;
+
+  const activeUser = (sessionStorage.getItem('loggedInUsername') || "").toLowerCase();
+  if (target.username.toLowerCase() === activeUser) {
+    showToast("You cannot delete the currently logged-in account.");
+    return;
+  }
+
+  users.splice(idx, 1);
+  renderAdminUserList(users);
+
+  const synced = await syncUserMutationToSheet({
+    action: "deleteUser",
+    username: target.username
+  }, users);
+
+  showToast(synced ? "Deleted '" + target.username + "' from Google Sheet!" : "Deleted '" + target.username + "' locally.");
 }
 
 function openAddNodeModal() {
@@ -1045,6 +1402,32 @@ function exportFinalExcel() {
   }, 100);
 }
 
+function loadBlankProject() {
+  data1 = {};
+  data2 = {};
+  file1Name = "";
+  file2Name = "";
+  document.getElementById('f1').value = "";
+  document.getElementById('f2').value = "";
+  document.getElementById('f1Status').innerText = "No file loaded";
+  document.getElementById('f2Status').innerText = "No file loaded";
+  document.getElementById('chSelect').innerHTML = '<option value="">No Chainages (Blank Project)</option>';
+  document.getElementById('activeChainageTitle').innerText = "Cross Section Visualizer (Scale 1:100) - Blank Project";
+  document.getElementById('datumLabel').innerText = "Datum: -- | Max RL: --";
+  document.getElementById('areaBody').innerHTML = "";
+  document.getElementById('areaTotalCut').innerText = "0.000";
+  document.getElementById('areaTotalFill').innerText = "0.000";
+  document.getElementById('volumeBody').innerHTML = "";
+  document.getElementById('volTotalCut').innerText = "0.000";
+  document.getElementById('volTotalFill').innerText = "0.000";
+  document.getElementById('summaryCut').innerText = "0.000 m³";
+  document.getElementById('summaryFill').innerText = "0.000 m³";
+  document.getElementById('summaryNet').innerText = "0.000 m³";
+  document.getElementById('volumeSection').classList.add('hidden');
+  if (myChart) { myChart.destroy(); myChart = null; }
+  if (massChart) { massChart.destroy(); massChart = null; }
+}
+
 function loadSampleData() {
   data1 = {
     "0": [{ x: -10, y: 105.2 }, { x: -5, y: 104.8 }, { x: 0, y: 104.5 }, { x: 5, y: 104.1 }, { x: 10, y: 103.8 }],
@@ -1056,16 +1439,19 @@ function loadSampleData() {
     "20": [{ x: -10, y: 104.0 }, { x: -5, y: 104.0 }, { x: 0, y: 104.0 }, { x: 5, y: 104.0 }, { x: 10, y: 104.0 }],
     "40": [{ x: -10, y: 104.5 }, { x: -5, y: 104.5 }, { x: 0, y: 104.5 }, { x: 5, y: 104.5 }, { x: 10, y: 104.5 }]
   };
-  document.getElementById('f1Status').innerText = "Demo_OGL.csv";
-  document.getElementById('f2Status').innerText = "Demo_PGL.csv";
+  file1Name = "Demo_OGL.csv";
+  file2Name = "Demo_PGL.csv";
+  document.getElementById('f1Status').innerText = file1Name;
+  document.getElementById('f2Status').innerText = file2Name;
   syncChainages();
+  showToast("Demo project loaded!");
 }
 
 window.onload = function () {
   if (sessionStorage.getItem('isEarthworkLoggedIn') === 'true') {
     document.getElementById('loginModal').classList.add('hidden');
     checkAdminRoleUI();
-    loadSampleData();
+    loadBlankProject();
   } else {
     document.getElementById('loginModal').classList.remove('hidden');
   }

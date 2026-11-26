@@ -48,23 +48,25 @@
         <h3>Head Office</h3>
         <p><strong>Address:</strong> Office No. 99, Dharampur, Nalhati, Birbhum, West Bengal 731220</p>
         <p><strong>Phone:</strong> +91 82501 66575</p>
+        <p><strong>WhatsApp No:</strong> <a href="https://wa.me/918250166575" target="_blank" rel="noopener" style="color:#059669; font-weight:700; text-decoration:none;">+91 82501 66575</a></p>
         <p><strong>Email:</strong> dipaksingha235@gmail.com</p>
-        <p><strong>Hours:</strong> Mon &ndash; Sat, 9:30 AM &ndash; 6:30 PM IST</p>
+        <p><strong>Hours:</strong> Mon &ndash; Sat, 8:00 AM &ndash; 8:00 PM IST</p>
+        <a href="https://wa.me/918250166575?text=Hello%20Unique%20Consultancy%2C%20I%20would%20like%20to%20connect%20regarding%20civil%20engineering%20services." target="_blank" rel="noopener" class="btn-primary" style="background:#059669; color:#fff;">Chat on WhatsApp</a>
       </div>
       <div class="card">
         <h3>Send an Inquiry</h3>
-        <form onsubmit="event.preventDefault(); document.getElementById('msg').style.display='block'; this.reset();">
+        <form id="whatsappInquiryForm" onsubmit="sendInquiryToWhatsApp(event)">
           <div class="form-group">
             <label>Full Name</label>
-            <input type="text" required placeholder="Enter your name">
+            <input type="text" id="inqName" required placeholder="Enter your name">
           </div>
           <div class="form-group">
             <label>Email Address</label>
-            <input type="email" required placeholder="Enter your email">
+            <input type="email" id="inqEmail" required placeholder="Enter your email">
           </div>
           <div class="form-group">
             <label>Service Required</label>
-            <select>
+            <select id="inqService">
               <option>Surveying</option>
               <option>Engineering Drawing</option>
               <option>Earth Work</option>
@@ -73,12 +75,32 @@
           </div>
           <div class="form-group">
             <label>Project Details</label>
-            <textarea rows="4" required placeholder="Describe your site location and scope"></textarea>
+            <textarea id="inqDetails" rows="4" required placeholder="Describe your site location and scope"></textarea>
           </div>
-          <button type="submit" class="btn-primary">Submit Inquiry</button>
-          <p id="msg" style="display:none; color:#059669; font-weight:600; margin-top:12px;">Thank you! Your inquiry has been received.</p>
+          <button type="submit" class="btn-primary">Send Inquiry via WhatsApp</button>
+          <p id="msg" style="display:none; color:#059669; font-weight:600; margin-top:12px;">Redirecting to WhatsApp (+91 82501 66575)...</p>
         </form>
       </div>
+      <script>
+        function sendInquiryToWhatsApp(e) {
+          e.preventDefault();
+          const name = document.getElementById('inqName').value.trim();
+          const email = document.getElementById('inqEmail').value.trim();
+          const service = document.getElementById('inqService').value;
+          const details = document.getElementById('inqDetails').value.trim();
+          const text = encodeURIComponent(
+            "New Inquiry - Unique Consultancy\n" +
+            "Name: " + name + "\n" +
+            "Email: " + email + "\n" +
+            "Service: " + service + "\n" +
+            "Project Details: " + details
+          );
+          const waUrl = "https://wa.me/918250166575?text=" + text;
+          document.getElementById('msg').style.display = 'block';
+          window.open(waUrl, "_blank", "noopener");
+          window.location.href = waUrl;
+        }
+      </script>
     </div>
   </section>
 
