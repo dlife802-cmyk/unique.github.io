@@ -1674,7 +1674,7 @@ async function exportCSAndAreaPDF() {
     await new Promise(r => setTimeout(r, 200));
     if (i > 0) doc.addPage();
     doc.setFontSize(14);
-    doc.text(projLabel + " | CROSS SECTION REPORT - CHAINAGE: " + parseFloat(common[i]).toFixed(2) + " m", 148, 12, { align: 'center' });
+    doc.text( CHAINAGE: " + parseFloat(common[i]).toFixed(2) + " m", 148, 12, { align: 'center' });
     doc.addImage(document.getElementById('csChart').toDataURL('image/png'), 'PNG', 10, 18, 277, 75);
     doc.autoTable({ html: '#areaTable', startY: 98, theme: 'grid', styles: { fontSize: 7 } });
   }
