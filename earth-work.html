@@ -251,10 +251,10 @@
         </div>
         <div class="ew-actions">
           <button id="adminPanelBtn" type="button" class="btn btn-sm btn-amber hidden" onclick="openAdminPanel()">Admin Panel</button>
-          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project (.JSON)</button>
-          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Load Project (.JSON)</label>
+          <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project</button>
+          <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Open Project</label>
           <input type="file" id="projectFileInput" class="hidden-file" accept=".json" onchange="loadProjectJSON(event)">
-          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Demo Data</button>
+          <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Load Data</button>
           <button type="button" class="btn btn-sm btn-danger" onclick="handleLogout()">Logout</button>
         </div>
       </div>
