@@ -95,16 +95,16 @@
 
       <div id="postSignupQrBox" class="hidden" style="margin-top:14px; padding:16px; border-radius:12px; background:#f8fafc; border:1px solid #cbd5e1; text-align:center;">
         <div style="display:inline-block; background:#5f259f; color:#fff; font-weight:700; font-size:12px; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
-          PhonePe UPI &bull; &rupee;100
+          PhonePe UPI &bull; &rupee;200
         </div>
         <div id="phonepeQrContainer" style="margin:6px auto 10px; width:196px; min-height:196px; padding:8px; background:#fff; border:2px solid #5f259f; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-          <img id="phonepeQrImg" alt="PhonePe QR Rs 100 - 8250166575@ybl" style="width:180px; height:180px; display:block; border-radius:6px;">
+          <img id="phonepeQrImg" alt="PhonePe QR Rs 200 - 8250166575@ybl" style="width:180px; height:180px; display:block; border-radius:6px;">
         </div>
-        <p style="margin:4px 0 2px; font-weight:700; color:#0f233c; font-size:13px;">Amount: &rupee;100 | UPI ID: 8250166575@ybl</p>
+        <p style="margin:4px 0 2px; font-weight:700; color:#0f233c; font-size:13px;">Amount: &rupee;200 | UPI ID: 8250166575@ybl</p>
         <p id="whatsappApprovalMsg" style="margin:8px 0 12px; font-weight:700; color:#b91c1c; font-size:12.5px; background:#fef2f2; border:1px solid #fecaca; padding:8px 10px; border-radius:8px;">
           Share Screensot to Admin Via whatsapp For Approval
         </p>
-        <a id="whatsappApprovalLink" href="https://wa.me/918250166575?text=Hello%20Admin%2C%20I%20have%20completed%20signup%20and%20paid%20Rs%20100%20to%208250166575%40ybl.%20Sharing%20screenshot%20for%20approval." target="_blank" rel="noopener" class="btn btn-green btn-full" style="margin-bottom:8px;">
+        <a id="whatsappApprovalLink" href="https://wa.me/918250166575?text=Hello%20Admin%2C%20I%20have%20completed%20signup%20and%20paid%20Rs%20200%20to%208250166575%40ybl.%20Sharing%20screenshot%20for%20approval." target="_blank" rel="noopener" class="btn btn-green btn-full" style="margin-bottom:8px;">
           Share Screenshot on WhatsApp (+91 82501 66575)
         </a>
         <button type="button" class="btn btn-outline-dark btn-full" onclick="resetAndBackToLogin()">Done &amp; Back to Login</button>
@@ -268,34 +268,120 @@
     </div>
   </div>
 
-  <!-- Edit Node Modal -->
-  <div id="editNodeModal" class="modal-overlay hidden">
-    <div class="auth-card" style="max-width:380px;">
-      <h2>Edit Cross-Section Node</h2>
-      <p>Select an existing node and update its Offset &amp; Level.</p>
-      <form class="auth-form" onsubmit="confirmEditNode(event)">
+  <!-- CS Template Modal -->
+  <div id="csTemplateModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width:520px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2 style="margin:0;">CS Template Setup</h2>
+        <button type="button" class="btn btn-sm btn-outline-dark" onclick="closeCsTemplateModal()">Close</button>
+      </div>
+      <p style="margin-bottom:14px;">Configure cross-section geometry, camber, side slopes, and side-slope termination rule.</p>
+      <form class="auth-form" onsubmit="saveCsTemplateConfig(event)">
         <div class="input-group">
-          <label>Layer</label>
-          <select id="editNodeLayerSelect" onchange="populateEditNodeSelect()" required>
-            <option value="L1">OGL</option>
-            <option value="L2">PGL</option>
-          </select>
+          <label>Template Name</label>
+          <input type="text" id="csTplName" placeholder="e.g. 2-Lane Highway Standard" required>
         </div>
-        <div class="input-group">
-          <label>Select Node</label>
-          <select id="editNodeIndexSelect" onchange="loadSelectedEditNodeValues()" required></select>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="input-group">
+            <label>Left Carriageway Width (m)</label>
+            <input type="number" id="csLeftWidth" step="0.01" min="0" value="3.75" required>
+          </div>
+          <div class="input-group">
+            <label>Right Carriageway Width (m)</label>
+            <input type="number" id="csRightWidth" step="0.01" min="0" value="3.75" required>
+          </div>
         </div>
-        <div class="input-group">
-          <label>New Offset (m)</label>
-          <input type="number" id="editNodeOffsetInput" step="any" required>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="input-group">
+            <label>Left Carriageway Camber (%)</label>
+            <input type="number" id="csLeftCamber" step="0.05" min="0" value="2.5" required>
+          </div>
+          <div class="input-group">
+            <label>Right Carriageway Camber (%)</label>
+            <input type="number" id="csRightCamber" step="0.05" min="0" value="2.5" required>
+          </div>
         </div>
-        <div class="input-group">
-          <label>New Level / RL (m)</label>
-          <input type="number" id="editNodeLevelInput" step="any" required>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="input-group">
+            <label>Cut Side Slope (H : 1V)</label>
+            <input type="number" id="csCutSlope" step="0.05" min="0.05" value="1.0" required>
+          </div>
+          <div class="input-group">
+            <label>Fill Side Slope (H : 1V)</label>
+            <input type="number" id="csFillSlope" step="0.05" min="0.05" value="1.5" required>
+          </div>
         </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:end;">
+          <div class="input-group">
+            <label>Side Slope Behavior</label>
+            <select id="csSlopeMode" onchange="toggleCsMaxWidthField()" required>
+              <option value="stop">Stop (at OGL intersection)</option>
+              <option value="continue">Continue (up to specified width)</option>
+            </select>
+          </div>
+          <div class="input-group" id="csMaxWidthGroup">
+            <label>Specified Max Width (m, per side)</label>
+            <input type="number" id="csMaxWidth" step="0.01" min="0.1" value="15.00" required>
+          </div>
+        </div>
+
+        <div id="csSavedBadge" style="margin-top:8px; font-size:12px; color:#065f46; font-weight:600;"></div>
+
         <div style="display:flex; gap:10px; margin-top:14px;">
-          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeEditNodeModal()">Cancel</button>
-          <button type="submit" class="btn btn-amber btn-full">Save Changes</button>
+          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeCsTemplateModal()">Cancel</button>
+          <button type="submit" class="btn btn-purple btn-full">Save CS Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Apply CS Template (Chainage-wise Shift Center & Design Level Popup) Modal -->
+  <div id="applyCsTemplateModal" class="modal-overlay hidden">
+    <div class="auth-card" style="max-width:700px; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2 style="margin:0;">Apply CS Template</h2>
+        <button type="button" class="btn btn-sm btn-outline-dark" onclick="closeApplyCsTemplateModal()">Close</button>
+      </div>
+      <p style="margin-bottom:12px;">Set chainage-wise <strong>Shift Center</strong> (+right, -left, 0 = centre) and <strong>Design Level (Centre RL)</strong> across all OGL chainages.</p>
+      <form class="auth-form" onsubmit="confirmApplyCsTemplate(event)">
+        <div class="input-group" style="margin-bottom:10px;">
+          <label>Active Template</label>
+          <input type="text" id="applyTplSummary" readonly style="background:#f8fafc; font-weight:600;">
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; background:#f8fafc; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px;">
+          <span style="font-size:11.5px; font-weight:700; color:#0f233c;">Quick Fill All Chainages:</span>
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <input type="number" id="csQuickFillShift" step="0.001" placeholder="Shift (m)" style="width:105px; padding:5px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+            <button type="button" class="btn btn-sm btn-purple" onclick="fillAllChainageShift()">Set All Shift</button>
+            <input type="number" id="csQuickFillRL" step="0.001" placeholder="RL (m)" style="width:105px; padding:5px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">
+            <button type="button" class="btn btn-sm btn-navy" onclick="fillAllChainageDesignRL()">Set All RL</button>
+            <button type="button" class="btn btn-sm btn-outline-dark" onclick="matchAllChainageToOGL()">Match OGL</button>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height:270px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+          <table class="ew-table" style="margin:0;">
+            <thead>
+              <tr>
+                <th>Sl</th>
+                <th>Chainage (m)</th>
+                <th>Shift Center (m) <small style="font-weight:500;">(+R/-L)</small></th>
+                <th>OGL at Shift CL (m)</th>
+                <th>Design Level — Centre RL (m)</th>
+              </tr>
+            </thead>
+            <tbody id="csChainageRlBody"></tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button type="button" class="btn btn-outline-dark btn-full" onclick="closeApplyCsTemplateModal()">Cancel</button>
+          <button type="submit" class="btn btn-amber btn-full">Apply to All OGL Chainages</button>
         </div>
       </form>
     </div>
@@ -320,6 +406,8 @@
           <button type="button" class="btn btn-sm btn-green" onclick="saveProjectJSON()">Save Project</button>
           <label for="projectFileInput" class="btn btn-sm btn-navy" style="margin:0; cursor:pointer;">Open Project</label>
           <input type="file" id="projectFileInput" class="hidden-file" accept=".json" onchange="loadProjectJSON(event)">
+          <button type="button" class="btn btn-sm btn-purple" onclick="openCsTemplateModal()">CS Template</button>
+          <button type="button" class="btn btn-sm btn-amber" onclick="openApplyCsTemplateModal()">Apply CS Template</button>
           <button type="button" class="btn btn-sm btn-outline-dark" onclick="loadSampleData()">Load Demo</button>
           <button type="button" class="btn btn-sm btn-danger" onclick="handleLogout()">Logout</button>
         </div>
@@ -394,8 +482,6 @@
                 <h2 class="cs-sheet-title" id="activeChainageTitle">Cross Section Visualizer - Blank Project</h2>
               </div>
               <div class="cs-sheet-controls">
-                <button type="button" class="cs-ctrl-btn" title="Previous Chainage" onclick="stepChainage(-1)">&#9664; Prev</button>
-                <button type="button" class="cs-ctrl-btn" title="Next Chainage" onclick="stepChainage(1)">Next &#9654;</button>
                 <button type="button" id="toggleLabelsBtn" class="cs-ctrl-btn active" title="Toggle RL Data Labels" onclick="toggleRLCallouts()">RL Tags: ON</button>
                 <button type="button" id="toggleGridBtn" class="cs-ctrl-btn active" title="Toggle Engineering Grid" onclick="toggleEngGrid()">Grid: ON</button>
                 <button type="button" id="toggleCLBtn" class="cs-ctrl-btn active" title="Toggle Centre Line (CL 0.000)" onclick="toggleCentreLine()">CL: ON</button>
@@ -466,6 +552,8 @@
                 <button type="button" class="btn btn-sm btn-navy" onclick="openAddNodeModal()">+ Add Offset</button>
                 <button type="button" class="btn btn-sm btn-amber" onclick="openEditNodeModal()">&#9998; Edit Offset</button>
                 <button type="button" class="btn btn-sm btn-danger" onclick="openRemoveNodeModal()">- Remove Offset</button>
+                <button type="button" class="cs-ctrl-btn cs-ctrl-btn-light" title="Previous Chainage" onclick="stepChainage(-1)">&#9664; Prev</button>
+                <button type="button" class="cs-ctrl-btn cs-ctrl-btn-light" title="Next Chainage" onclick="stepChainage(1)">Next &#9654;</button>
               </div>
             </div>
 
@@ -680,8 +768,6 @@ function renderPhonePeQrCanvasImage(upiId, amount) {
   const imgEl = document.getElementById('phonepeQrImg');
   const container = document.getElementById('phonepeQrContainer');
 
-  // Build crisp SVG QR-style matrix directly as a data URI so it always renders reliably
-  // even if canvas is blocked or external image hosts are offline
   let hash = 2166136261;
   for (let i = 0; i < payload.length; i++) {
     hash ^= payload.charCodeAt(i);
@@ -733,7 +819,6 @@ function renderPhonePeQrCanvasImage(upiId, amount) {
     imgEl.style.display = "block";
   }
 
-  // Also try rendering a real QR bitmap via quickchart/qrserver if online, while keeping SVG immediately visible
   const remoteQrUrl = "https://quickchart.io/qr?size=180&text=" + encodeURIComponent(payload);
   const probe = new Image();
   probe.onload = function () {
@@ -748,9 +833,9 @@ function renderPhonePeQrCanvasImage(upiId, amount) {
 }
 
 function showPostSignupQrScreen(name, username) {
-  renderPhonePeQrCanvasImage("8250166575@ybl", "100");
+  renderPhonePeQrCanvasImage("8250166575@ybl", "200");
   const waText = encodeURIComponent(
-    "Hello Admin, I just signed up (Name: " + name + ", Username: " + username + ") and paid Rs 100 via PhonePe to 8250166575@ybl. Sharing screenshot for approval."
+    "Hello Admin, I just signed up (Name: " + name + ", Username: " + username + ") and paid Rs 200 via PhonePe to 8250166575@ybl. Sharing screenshot for approval."
   );
   const waLink = document.getElementById('whatsappApprovalLink');
   if (waLink) waLink.href = "https://wa.me/918250166575?text=" + waText;
@@ -784,7 +869,7 @@ async function handleSignupRequest(e) {
     const result = await res.json();
     if (result.success) {
       msg.className = "auth-msg success";
-      msg.innerText = result.message || "Signup request saved! Complete Rs 100 payment below.";
+      msg.innerText = result.message || "Signup request saved! Complete Rs 200 payment below.";
       msg.style.display = 'block';
       showPostSignupQrScreen(name, user);
       return;
@@ -811,7 +896,7 @@ async function handleSignupRequest(e) {
   users.push({ name: name, username: user, password: pass, role: "user", status: "pending" });
   saveUsers(users);
   msg.className = "auth-msg success";
-  msg.innerText = "Signup request submitted! Complete Rs 100 payment below.";
+  msg.innerText = "Signup request submitted! Complete Rs 200 payment below.";
   msg.style.display = 'block';
   showPostSignupQrScreen(name, user);
 }
@@ -1115,7 +1200,7 @@ async function deleteAdminUserRow(idx) {
   }
 
   const targetUsername = String(target.username || "").trim();
-  const sheetRowNumber = idx + 2; // Row 1 is header in Google Sheet
+  const sheetRowNumber = idx + 2;
   users.splice(idx, 1);
   renderAdminUserList(users);
 
@@ -1316,87 +1401,6 @@ function confirmEditNode(e) {
   showToast("Node updated to offset " + newOffset.toFixed(3) + "m, RL " + newLevel.toFixed(3) + "m");
 }
 
-function openEditNodeModal() {
-  const ch = document.getElementById('chSelect').value;
-  if (!ch || !data1[ch] || !data2[ch]) {
-    showToast("Please select a valid active chainage first!");
-    return;
-  }
-  const n1 = document.getElementById('l1Name').value || "OGL";
-  const n2 = document.getElementById('l2Name').value || "PGL";
-  const layerSelect = document.getElementById('editNodeLayerSelect');
-  layerSelect.options[0].text = n1;
-  layerSelect.options[1].text = n2;
-  layerSelect.value = "L1";
-  populateEditNodeSelect();
-  document.getElementById('editNodeModal').classList.remove('hidden');
-  document.getElementById('editNodeOffsetInput').focus();
-}
-
-function populateEditNodeSelect() {
-  const ch = document.getElementById('chSelect').value;
-  const layer = document.getElementById('editNodeLayerSelect').value;
-  const nodeSelect = document.getElementById('editNodeIndexSelect');
-  nodeSelect.innerHTML = "";
-  if (!ch || !data1[ch] || !data2[ch]) return;
-  const arr = layer === "L1" ? data1[ch] : data2[ch];
-  arr.forEach((pt, idx) => {
-    const opt = document.createElement('option');
-    opt.value = idx;
-    opt.text = pt.x.toFixed(3) + " m (RL: " + pt.y.toFixed(3) + " m)";
-    nodeSelect.appendChild(opt);
-  });
-  loadSelectedEditNodeValues();
-}
-
-function loadSelectedEditNodeValues() {
-  const ch = document.getElementById('chSelect').value;
-  const layer = document.getElementById('editNodeLayerSelect').value;
-  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
-  const offsetInput = document.getElementById('editNodeOffsetInput');
-  const levelInput = document.getElementById('editNodeLevelInput');
-  if (!ch || !data1[ch] || !data2[ch] || isNaN(idx)) {
-    offsetInput.value = "";
-    levelInput.value = "";
-    return;
-  }
-  const arr = layer === "L1" ? data1[ch] : data2[ch];
-  if (arr[idx]) {
-    offsetInput.value = arr[idx].x;
-    levelInput.value = arr[idx].y;
-  }
-}
-
-function closeEditNodeModal() {
-  document.getElementById('editNodeModal').classList.add('hidden');
-}
-
-function confirmEditNode(e) {
-  e.preventDefault();
-  const ch = document.getElementById('chSelect').value;
-  const layer = document.getElementById('editNodeLayerSelect').value;
-  const idx = parseInt(document.getElementById('editNodeIndexSelect').value, 10);
-  const newOffset = parseFloat(document.getElementById('editNodeOffsetInput').value);
-  const newLevel = parseFloat(document.getElementById('editNodeLevelInput').value);
-  if (!ch || isNaN(idx) || isNaN(newOffset) || isNaN(newLevel)) return;
-
-  const targetArray = layer === "L1" ? data1[ch] : data2[ch];
-  if (idx < 0 || idx >= targetArray.length) return;
-
-  const duplicateIdx = targetArray.findIndex((p, i) => i !== idx && Math.abs(p.x - newOffset) < 0.0001);
-  if (duplicateIdx !== -1) {
-    targetArray[duplicateIdx].y = newLevel;
-    targetArray.splice(idx, 1);
-  } else {
-    targetArray[idx] = { x: newOffset, y: newLevel };
-  }
-  targetArray.sort((a, b) => a.x - b.x);
-
-  closeEditNodeModal();
-  runAnalysis();
-  showToast("Node updated to offset " + newOffset.toFixed(3) + "m, RL " + newLevel.toFixed(3) + "m");
-}
-
 let data1 = {}, data2 = {};
 let file1Name = "", file2Name = "";
 let myChart = null, massChart = null;
@@ -1444,7 +1448,7 @@ document.getElementById('f2').onchange = async (e) => {
     file2Name = e.target.files[0].name;
     document.getElementById('f2Status').innerText = file2Name;
     data2 = {};
-  document.getElementById('projectName').value = "";
+    document.getElementById('projectName').value = "";
     await loadCSV(e.target.files[0], data2);
     syncChainages();
     showToast("Layer 2 CSV loaded!");
@@ -1452,15 +1456,27 @@ document.getElementById('f2').onchange = async (e) => {
 };
 
 function syncChainages() {
-  const common = Object.keys(data1).filter(c => data2[c]).sort((a, b) => parseFloat(a) - parseFloat(b));
+  const keys1 = Object.keys(data1 || {});
+  const keys2 = Object.keys(data2 || {});
+  const common = keys1.filter(c => data2 && data2[c]).sort((a, b) => parseFloat(a) - parseFloat(b));
+  const chainages = common.length > 0
+    ? common
+    : [...new Set([...keys1, ...keys2])].sort((a, b) => parseFloat(a) - parseFloat(b));
   const chSelect = document.getElementById('chSelect');
-  if (common.length > 0) {
+  if (chainages.length > 0) {
     const curVal = chSelect.value;
-    chSelect.innerHTML = common.map(c => '<option value="' + c + '">' + c + '</option>').join('');
-    if (common.includes(curVal)) chSelect.value = curVal;
+    chSelect.innerHTML = chainages.map(c => '<option value="' + c + '">' + c + '</option>').join('');
+    if (chainages.includes(curVal)) {
+      chSelect.value = curVal;
+    } else {
+      chSelect.value = chainages[0];
+    }
     runAnalysis();
   } else {
     chSelect.innerHTML = '<option value="">No Common Chainages</option>';
+    const emptyOverlay = document.getElementById('csEmptyState');
+    if (emptyOverlay) emptyOverlay.classList.remove('hidden');
+    if (myChart) { myChart.destroy(); myChart = null; }
   }
 }
 
@@ -1510,9 +1526,9 @@ const dragRoundModes = [
   { step: 0.01, label: '0.01',  decimals: 2 },
   { step: 0.001,label: '0.001', decimals: 3 }
 ];
-let dragRoundIdx = 3; // Default 0.001
+let dragRoundIdx = 3;
 const dragLayerModes = ['BOTH', 'OGL', 'PGL'];
-let dragLayerModeIdx = 0; // Default: OGL AND PGL
+let dragLayerModeIdx = 0;
 
 function getActiveDragLayerMode() {
   return dragLayerModes[dragLayerModeIdx] || 'BOTH';
@@ -1748,7 +1764,9 @@ function updateLayerLineColors() {
 
 function runAnalysis() {
   const ch = document.getElementById('chSelect').value;
-  if (!ch || !data1[ch] || !data2[ch]) return;
+  const has1 = Boolean(ch && data1 && Array.isArray(data1[ch]) && data1[ch].length > 0);
+  const has2 = Boolean(ch && data2 && Array.isArray(data2[ch]) && data2[ch].length > 0);
+  if (!ch || (!has1 && !has2)) return;
 
   const emptyOverlay = document.getElementById('csEmptyState');
   if (emptyOverlay) emptyOverlay.classList.add('hidden');
@@ -1756,8 +1774,8 @@ function runAnalysis() {
   const projName = (document.getElementById('projectName').value || "").trim();
   document.getElementById('activeChainageTitle').innerText = (projName ? projName + " — " : "") + "Chainage: " + parseFloat(ch).toFixed(3) + " m";
   const strip = parseFloat(document.getElementById('stripDepth').value) || 0;
-  const l1 = data1[ch].map(p => ({ x: p.x, y: p.y - strip }));
-  const l2 = data2[ch];
+  const l1 = has1 ? data1[ch].map(p => ({ x: p.x, y: p.y - strip })) : [];
+  const l2 = has2 ? data2[ch].map(p => ({ x: p.x, y: p.y })) : [];
 
   const n1 = document.getElementById('l1Name').value || "Layer 1";
   const n2 = document.getElementById('l2Name').value || "Layer 2";
@@ -1769,56 +1787,66 @@ function runAnalysis() {
   if (document.getElementById('legL1Name')) document.getElementById('legL1Name').innerText = n1 + (strip > 0 ? " (Stripped)" : " (Ground)");
   if (document.getElementById('legL2Name')) document.getElementById('legL2Name').innerText = n2 + " (Design)";
 
-  const startX = Math.max(l1[0].x, l2[0].x), endX = Math.min(l1[l1.length - 1].x, l2[l2.length - 1].x);
-  let rawX = [...new Set([...l1.map(p => p.x), ...l2.map(p => p.x)])].filter(x => x >= startX && x <= endX).sort((a, b) => a - b);
-
-  let allX = [];
-  for (let i = 0; i < rawX.length - 1; i++) {
-    const x1 = rawX[i], x2 = rawX[i + 1];
-    const d1 = getElev(x1, l1) - getElev(x1, l2), d2 = getElev(x2, l1) - getElev(x2, l2);
-    allX.push(x1);
-    if ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) {
-      allX.push(x1 + (x2 - x1) * (Math.abs(d1) / (Math.abs(d1) + Math.abs(d2))));
-    }
-  }
-  allX.push(rawX[rawX.length - 1]);
-  allX = [...new Set(allX)].sort((a, b) => a - b);
-
-  let sumC = 0, sumF = 0, maxCutDepth = 0, maxFillDepth = 0, tbody = document.getElementById('areaBody'), prev = null;
+  let sumC = 0, sumF = 0, maxCutDepth = 0, maxFillDepth = 0;
+  const tbody = document.getElementById('areaBody');
   tbody.innerHTML = "";
+  let allX = [];
+  const fullAllX = [...new Set([...l1.map(p => p.x), ...l2.map(p => p.x)])].sort((a, b) => a - b);
 
-  allX.forEach((x, i) => {
-    const y1 = getElev(x, l1), y2 = getElev(x, l2);
-    const diff = y1 - y2;
-    const cutVal = diff > 0.0001 ? diff : 0;
-    const fillVal = diff < -0.0001 ? Math.abs(diff) : 0;
-    if (cutVal > maxCutDepth) maxCutDepth = cutVal;
-    if (fillVal > maxFillDepth) maxFillDepth = fillVal;
+  if (has1 && has2) {
+    const startX = Math.max(l1[0].x, l2[0].x), endX = Math.min(l1[l1.length - 1].x, l2[l2.length - 1].x);
+    let rawX = [...new Set([...l1.map(p => p.x), ...l2.map(p => p.x)])].filter(x => x >= startX && x <= endX).sort((a, b) => a - b);
 
-    const cur = { x: x, y1: y1, y2: y2, c: cutVal, f: fillVal };
-    let row = "<td>" + (i + 1) + "</td><td>" + x.toFixed(3) + "</td><td>" + y1.toFixed(3) + "</td><td>" + y2.toFixed(3) + "</td>";
-    if (prev) {
-      const w = cur.x - prev.x, avgC = (cur.c + prev.c) / 2, avgF = (cur.f + prev.f) / 2, aC = avgC * w, aF = avgF * w;
-      sumC += aC; sumF += aF;
-      row += "<td>" + cur.c.toFixed(3) + "</td><td>" + avgC.toFixed(3) + "</td><td>" + w.toFixed(3) + "</td><td>" + aC.toFixed(3) + "</td>" +
-             "<td>" + cur.f.toFixed(3) + "</td><td>" + avgF.toFixed(3) + "</td><td>" + w.toFixed(3) + "</td><td>" + aF.toFixed(3) + "</td>";
-    } else {
-      row += "<td>" + cur.c.toFixed(3) + "</td><td>0.000</td><td>0.000</td><td>0.000</td><td>" + cur.f.toFixed(3) + "</td><td>0.000</td><td>0.000</td><td>0.000</td>";
+    for (let i = 0; i < rawX.length - 1; i++) {
+      const x1 = rawX[i], x2 = rawX[i + 1];
+      const d1 = getElev(x1, l1) - getElev(x1, l2), d2 = getElev(x2, l1) - getElev(x2, l2);
+      allX.push(x1);
+      if ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) {
+        allX.push(x1 + (x2 - x1) * (Math.abs(d1) / (Math.abs(d1) + Math.abs(d2))));
+      }
     }
-    tbody.innerHTML += "<tr>" + row + "</tr>";
-    prev = cur;
-  });
+    if (rawX.length > 0) {
+      allX.push(rawX[rawX.length - 1]);
+    }
+    allX = [...new Set(allX)].sort((a, b) => a - b);
+
+    let prev = null;
+    allX.forEach((x, i) => {
+      const y1 = getElev(x, l1), y2 = getElev(x, l2);
+      const diff = y1 - y2;
+      const cutVal = diff > 0.0001 ? diff : 0;
+      const fillVal = diff < -0.0001 ? Math.abs(diff) : 0;
+      if (cutVal > maxCutDepth) maxCutDepth = cutVal;
+      if (fillVal > maxFillDepth) maxFillDepth = fillVal;
+
+      const cur = { x: x, y1: y1, y2: y2, c: cutVal, f: fillVal };
+      let row = "<td>" + (i + 1) + "</td><td>" + x.toFixed(3) + "</td><td>" + y1.toFixed(3) + "</td><td>" + y2.toFixed(3) + "</td>";
+      if (prev) {
+        const w = cur.x - prev.x, avgC = (cur.c + prev.c) / 2, avgF = (cur.f + prev.f) / 2, aC = avgC * w, aF = avgF * w;
+        sumC += aC; sumF += aF;
+        row += "<td>" + cur.c.toFixed(3) + "</td><td>" + avgC.toFixed(3) + "</td><td>" + w.toFixed(3) + "</td><td>" + aC.toFixed(3) + "</td>" +
+               "<td>" + cur.f.toFixed(3) + "</td><td>" + avgF.toFixed(3) + "</td><td>" + w.toFixed(3) + "</td><td>" + aF.toFixed(3) + "</td>";
+      } else {
+        row += "<td>" + cur.c.toFixed(3) + "</td><td>0.000</td><td>0.000</td><td>0.000</td><td>" + cur.f.toFixed(3) + "</td><td>0.000</td><td>0.000</td><td>0.000</td>";
+      }
+      tbody.innerHTML += "<tr>" + row + "</tr>";
+      prev = cur;
+    });
+  } else {
+    allX = fullAllX.slice();
+  }
 
   document.getElementById('areaTotalCut').innerText = sumC.toFixed(3);
   document.getElementById('areaTotalFill').innerText = sumF.toFixed(3);
 
-  const minVal = Math.min(...l1.map(p => p.y), ...l2.map(p => p.y));
-  const maxVal = Math.max(...l1.map(p => p.y), ...l2.map(p => p.y));
+  const combinedPts = [...l1, ...l2];
+  const minVal = Math.min(...combinedPts.map(p => p.y));
+  const maxVal = Math.max(...combinedPts.map(p => p.y));
   const elevSpan = Math.max(maxVal - minVal, 0.5);
-  const vPad = Math.max(elevSpan * 0.05, 0.25);
+  const vPad = Math.max(elevSpan * 0.14, 0.45);
   const datum = Number((minVal - vPad).toFixed(3));
   const topLimit = Number((maxVal + vPad).toFixed(3));
-  const secWidth = allX.length > 1 ? (allX[allX.length - 1] - allX[0]) : 0;
+  const secWidth = fullAllX.length > 1 ? (fullAllX[fullAllX.length - 1] - fullAllX[0]) : 0;
 
   document.getElementById('datumLabel').innerText = datum.toFixed(3) + " / " + maxVal.toFixed(3) + " m";
   if (document.getElementById('metricCutSummary')) {
@@ -1834,9 +1862,12 @@ function runAnalysis() {
     document.getElementById('csSheetStamp').innerText = (projName || "Unique Consultancy") + " • CH " + parseFloat(ch).toFixed(3) + " m • Datum " + datum.toFixed(3) + " m";
   }
 
-  setTimeout(() => drawChart(l1, l2, n1, n2, ch, datum, topLimit, allX), 25);
+  setTimeout(() => {
+    drawChart(l1, l2, n1, n2, ch, datum, topLimit, fullAllX);
+    if (myChart) myChart.resize();
+  }, 25);
 
-  if (!document.getElementById('volumeSection').classList.contains('hidden')) {
+  if (has1 && has2 && !document.getElementById('volumeSection').classList.contains('hidden')) {
     toggleVolume(true);
   }
 }
@@ -1856,14 +1887,12 @@ const cadCrossSectionPlugin = {
     ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
     ctx.clip();
 
-    // Project-adaptive small fine sub-grid + clear major grid when Grid is ON
     if (opts.showGrid !== false) {
       const xMinVal = scales.x.min;
       const xMaxVal = scales.x.max;
       const yMinVal = scales.y.min;
       const yMaxVal = scales.y.max;
 
-      // Measure active project cross-section width & elevation relief across all chainages
       const projKeys = Object.keys(data1 || {}).filter(c => data2 && data2[c]);
       let projMaxWidth = isFinite(xMaxVal - xMinVal) ? (xMaxVal - xMinVal) : 20;
       let projMaxRelief = isFinite(yMaxVal - yMinVal) ? (yMaxVal - yMinVal) : 5;
@@ -1905,11 +1934,9 @@ const cadCrossSectionPlugin = {
         const manualH = getHorizontalGridStep();
         const manualV = getVerticalGridStep();
 
-        // Target ~55-75 small horizontal divisions and ~24-36 small vertical divisions tailored to active project, or exact user-selected H/V step
         const minorXStep = manualH || niceStep(Math.max(projMaxWidth / 60, xSpan / 80));
         const minorYStep = manualV || niceStep(Math.max(projMaxRelief / 28, ySpan / 38));
 
-        // Span vertical grid lines across the full chart X scale range (from scales.x.min to scales.x.max)
         const scaleXMin = (typeof scales.x.min === 'number' && isFinite(scales.x.min)) ? scales.x.min : xMinVal;
         const scaleXMax = (typeof scales.x.max === 'number' && isFinite(scales.x.max)) ? scales.x.max : xMaxVal;
         const epsX = 1e-6;
@@ -1939,7 +1966,6 @@ const cadCrossSectionPlugin = {
         }
         ctx.stroke();
 
-        // Major grid lines: exact manual step when adjusted, otherwise project-scaled major interval
         const majorXStep = manualH ? manualH : niceStep(Math.max(minorXStep * 5, xSpan / 12));
         const majorYStep = manualV ? manualV : niceStep(Math.max(minorYStep * 4, ySpan / 8));
         const firstMajorX = Math.ceil((scaleXMin - epsX) / majorXStep) * majorXStep;
@@ -1969,7 +1995,6 @@ const cadCrossSectionPlugin = {
       }
     }
 
-    // Shade Cut (L1 > L2) and Fill (L2 > L1) polygons cleanly between layers
     if (allX.length > 1 && l1.length > 1 && l2.length > 1) {
       for (let i = 0; i < allX.length - 1; i++) {
         const xa = allX[i], xb = allX[i + 1];
@@ -1992,7 +2017,6 @@ const cadCrossSectionPlugin = {
       }
     }
 
-    // Vertical projection lines from nodes down to Datum
     ctx.strokeStyle = 'rgba(100, 116, 139, 0.22)';
     ctx.lineWidth = 1;
     ctx.setLineDash([2, 3]);
@@ -2006,7 +2030,6 @@ const cadCrossSectionPlugin = {
     });
     ctx.setLineDash([]);
 
-    // Centreline (CL = 0.000 m) reference line
     const zeroX = scales.x.getPixelForValue(0);
     if (opts.showCL !== false && zeroX >= chartArea.left && zeroX <= chartArea.right) {
       ctx.beginPath();
@@ -2031,7 +2054,6 @@ const cadCrossSectionPlugin = {
     ctx.rect(0, 0, chart.width, chart.height);
     ctx.clip();
 
-    // CL badge at top
     const zeroX = scales.x.getPixelForValue(0);
     if (opts.showCL !== false && zeroX >= chartArea.left && zeroX <= chartArea.right) {
       const tagW = 64, tagH = 18;
@@ -2044,14 +2066,12 @@ const cadCrossSectionPlugin = {
       ctx.fillText('CL 0.000', zeroX, chartArea.top + 4 + tagH / 2);
     }
 
-    // Datum reference label at bottom-left
     ctx.fillStyle = '#0f233c';
     ctx.font = '700 10.5px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'bottom';
     ctx.fillText('DATUM: ' + Number(opts.datum || 0).toFixed(3) + ' m', chartArea.left + 8, chartArea.bottom - 6);
 
-    // Optional RL Callout Tags on nodes
     if (opts.showLabels) {
       const drawNodeTags = (pts, bgColor, textColor, yOffset) => {
         ctx.font = '600 9.5px ui-monospace, SFMono-Regular, Menlo, monospace';
@@ -2076,7 +2096,6 @@ const cadCrossSectionPlugin = {
       if (data.datasets[1]) drawNodeTags(data.datasets[1].data, 'rgba(37, 99, 235, 0.9)', '#ffffff', 14);
     }
 
-    // Draw offset marks along the X-axis strictly from node start to node end
     const d0Pts = (data && data.datasets && data.datasets[0] && Array.isArray(data.datasets[0].data)) ? data.datasets[0].data : [];
     const d1Pts = (data && data.datasets && data.datasets[1] && Array.isArray(data.datasets[1].data)) ? data.datasets[1].data : [];
     const activeNodeXs = [...d0Pts, ...d1Pts].map(pt => Number(pt && pt.x)).filter(v => isFinite(v));
@@ -2119,7 +2138,6 @@ const cadCrossSectionPlugin = {
       const markStep = manualH || niceStepOffset(Math.max(minorStep * 5, xSpan / 12));
       const eps = 1e-6;
 
-      // Collect offset positions from nodeStartX up to nodeEndX aligned to grid step, including nodeStartX and nodeEndX
       const markOffsets = [];
       const pushUniqueOffset = (val) => {
         const rounded = Number((Math.abs(val) < 1e-9 ? 0 : val).toFixed(3));
@@ -2209,6 +2227,9 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
       animation: false,
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: { top: 8, right: 12, bottom: 18, left: 6 }
+      },
       interaction: { mode: 'nearest', axis: 'x', intersect: false },
       plugins: {
         legend: {
@@ -2295,7 +2316,7 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
             if (!xs.length) return undefined;
             const minX = Math.min(...xs), maxX = Math.max(...xs);
             const span = Math.max(maxX - minX, 2);
-            const pad = Math.max(span * 0.04, 0.35);
+            const pad = Math.max(span * 0.08, 0.6);
             return Number((minX - pad).toFixed(3));
           })(),
           max: (() => {
@@ -2303,7 +2324,7 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
             if (!xs.length) return undefined;
             const minX = Math.min(...xs), maxX = Math.max(...xs);
             const span = Math.max(maxX - minX, 2);
-            const pad = Math.max(span * 0.04, 0.35);
+            const pad = Math.max(span * 0.08, 0.6);
             return Number((maxX + pad).toFixed(3));
           })(),
           title: {
@@ -2328,7 +2349,7 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
               const minXVal = xs.length ? Math.min(...xs) : -10;
               const maxXVal = xs.length ? Math.max(...xs) : 10;
               const spanBase = Math.max(maxXVal - minXVal, 2);
-              const rawSpan = spanBase + Math.max(spanBase * 0.04, 0.35) * 2;
+              const rawSpan = spanBase + Math.max(spanBase * 0.08, 0.6) * 2;
               const candidates = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50];
               const minorStep = (() => {
                 const raw = Math.max(spanBase / 60, rawSpan / 80);
@@ -2386,6 +2407,11 @@ function drawChart(p1, p2, n1, n2, ch, datum, topLimit, allX) {
     }
   });
 }
+
+window.addEventListener('resize', () => {
+  if (myChart) myChart.resize();
+  if (massChart) massChart.resize();
+});
 
 function toggleVolume(keepVisible) {
   const common = Object.keys(data1).filter(c => data2[c]).sort((a, b) => parseFloat(a) - parseFloat(b));
@@ -2551,25 +2577,19 @@ async function exportCSAndAreaPDF() {
   document.getElementById('loader').style.display = 'flex';
   document.getElementById('loadStatus').innerText = "Building Executive Cover & CAD Cross-Section Sheets...";
 
-  const doc = new jsPDF('l', 'mm', 'a4'); // A4 Landscape: 297 x 210 mm
+  const doc = new jsPDF('l', 'mm', 'a4');
   const pageW = 297, pageH = 210;
-  const totalPages = common.length;
-  const genDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const stripVal = parseFloat(document.getElementById('stripDepth')?.value || 0) || 0;
-  const cutFactorVal = parseFloat(document.getElementById('cutFactor')?.value || 1) || 1;
-  const fillFactorVal = parseFloat(document.getElementById('fillFactor')?.value || 1) || 1;
   const l1Name = (document.getElementById('l1Name')?.value || 'OGL').trim();
   const l2Name = (document.getElementById('l2Name')?.value || 'PGL').trim();
 
   function drawCadFrame(pageNum, badgeText, subtitleText, metaItems) {
-    // Double CAD Engineering Border
     doc.setDrawColor(15, 23, 42);
     doc.setLineWidth(0.6);
     doc.rect(6, 6, pageW - 12, pageH - 12);
     doc.setLineWidth(0.2);
     doc.rect(7.5, 7.5, pageW - 15, pageH - 15);
 
-    // Top Navy Header Bar + Amber Accent Strip
     doc.setFillColor(15, 23, 42);
     doc.rect(7.5, 7.5, pageW - 15, 13, 'F');
     doc.setFillColor(245, 158, 11);
@@ -2585,18 +2605,14 @@ async function exportCSAndAreaPDF() {
     doc.setTextColor(203, 213, 225);
     doc.text(subtitleText ? `PROJECT: ${projLabel.toUpperCase()}  |  ${subtitleText}` : `PROJECT: ${projLabel.toUpperCase()}`, 12, 18.2);
 
-    // Right Highlight Badge
     doc.setFillColor(245, 158, 11);
     doc.roundedRect(pageW - 68, 9.8, 56, 8.4, 1.5, 1.5, 'F');
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8.5);
     doc.text(badgeText, pageW - 40, 15.2, { align: 'center' });
-
-    // Bottom footer removed as requested
   }
 
-  // ==================== CROSS-SECTION SHEETS (SUMMARY SHEET REMOVED) ====================
   for (let i = 0; i < common.length; i++) {
     const ch = common[i];
     const chFormatted = parseFloat(ch).toFixed(3);
@@ -2625,7 +2641,6 @@ async function exportCSAndAreaPDF() {
       ]
     );
 
-    // Native Vector Legend Strip & Live Callouts
     const legY = 24.5;
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(226, 232, 240);
@@ -2668,7 +2683,6 @@ async function exportCSAndAreaPDF() {
     doc.setTextColor(4, 120, 87);
     doc.text(`FILL AREA: ${fillAreaTxt} m²`, pageW - 42, legY + 4.6);
 
-    // High-Resolution Cross-Section Canvas Image (with crisp white background & active CL/Grid state)
     const srcCanvas = document.getElementById('csChart');
     const tmpPdfCanvas = document.createElement('canvas');
     tmpPdfCanvas.width = srcCanvas.width;
@@ -2685,7 +2699,6 @@ async function exportCSAndAreaPDF() {
     doc.rect(11, 33, pageW - 22, 76);
     doc.addImage(chartImg, 'PNG', boxX, boxY, boxW, boxH);
 
-    // Overlay crisp vector CL (0.000 m) reference line & badge on PDF when CL: ON
     if (showCentreLine && myChart && myChart.scales && myChart.scales.x && myChart.chartArea && srcCanvas.clientWidth > 0) {
       const zeroPx = myChart.scales.x.getPixelForValue(0);
       const cArea = myChart.chartArea;
@@ -2706,7 +2719,6 @@ async function exportCSAndAreaPDF() {
           doc.setLineDashPattern([], 0);
         }
 
-        // Vector CL 0.000 tag at top of plot area
         const tagW = 16, tagH = 4.2;
         doc.setFillColor(220, 38, 38);
         doc.rect(pdfClX - tagW / 2, pdfTopY + 1, tagW, tagH, 'F');
@@ -2717,7 +2729,6 @@ async function exportCSAndAreaPDF() {
       }
     }
 
-    // Color-Coded Area Calculation Breakdown Table
     doc.autoTable({
       html: '#areaTable',
       startY: 112,
@@ -2839,6 +2850,359 @@ function loadSampleData() {
   showToast("Demo project loaded!");
 }
 
+let activeCsTemplate = {
+  name: "Standard CS Template",
+  leftWidth: 3.75,
+  rightWidth: 3.75,
+  leftCamber: 2.5,
+  rightCamber: 2.5,
+  cutSlope: 1.0,
+  fillSlope: 1.5,
+  slopeMode: "stop",
+  maxWidth: 15.0,
+  chainageShifts: {},
+  chainageLevels: {}
+};
+
+function toggleCsMaxWidthField() {
+  const maxWidthInput = document.getElementById('csMaxWidth');
+  const group = document.getElementById('csMaxWidthGroup');
+  if (maxWidthInput) {
+    maxWidthInput.disabled = false;
+    maxWidthInput.required = true;
+  }
+  if (group) {
+    group.style.opacity = "1";
+  }
+}
+
+function openCsTemplateModal() {
+  const fallbackCamber = typeof activeCsTemplate.camber === "number" ? activeCsTemplate.camber : 2.5;
+  const lCamb = typeof activeCsTemplate.leftCamber === "number" ? activeCsTemplate.leftCamber : fallbackCamber;
+  const rCamb = typeof activeCsTemplate.rightCamber === "number" ? activeCsTemplate.rightCamber : fallbackCamber;
+  document.getElementById('csTplName').value = activeCsTemplate.name;
+  document.getElementById('csLeftWidth').value = activeCsTemplate.leftWidth;
+  document.getElementById('csRightWidth').value = activeCsTemplate.rightWidth;
+  document.getElementById('csLeftCamber').value = lCamb;
+  document.getElementById('csRightCamber').value = rCamb;
+  document.getElementById('csCutSlope').value = activeCsTemplate.cutSlope;
+  document.getElementById('csFillSlope').value = activeCsTemplate.fillSlope;
+  document.getElementById('csSlopeMode').value = activeCsTemplate.slopeMode;
+  document.getElementById('csMaxWidth').value = activeCsTemplate.maxWidth;
+  toggleCsMaxWidthField();
+  document.getElementById('csSavedBadge').innerText = "Active Template: " + activeCsTemplate.name;
+  document.getElementById('csTemplateModal').classList.remove('hidden');
+}
+
+function closeCsTemplateModal() {
+  document.getElementById('csTemplateModal').classList.add('hidden');
+}
+
+function saveCsTemplateConfig(e) {
+  e.preventDefault();
+  const name = document.getElementById('csTplName').value.trim() || "Standard CS Template";
+  const leftWidth = Math.max(0, parseFloat(document.getElementById('csLeftWidth').value) || 0);
+  const rightWidth = Math.max(0, parseFloat(document.getElementById('csRightWidth').value) || 0);
+  const leftCamber = Math.max(0, parseFloat(document.getElementById('csLeftCamber').value) || 0);
+  const rightCamber = Math.max(0, parseFloat(document.getElementById('csRightCamber').value) || 0);
+  const cutSlope = Math.max(0.01, parseFloat(document.getElementById('csCutSlope').value) || 1.0);
+  const fillSlope = Math.max(0.01, parseFloat(document.getElementById('csFillSlope').value) || 1.5);
+  const slopeMode = document.getElementById('csSlopeMode').value;
+  const maxWidth = Math.max(0.1, parseFloat(document.getElementById('csMaxWidth').value) || 15.0);
+
+  activeCsTemplate = {
+    ...activeCsTemplate,
+    name,
+    leftWidth,
+    rightWidth,
+    leftCamber,
+    rightCamber,
+    camber: leftCamber,
+    cutSlope,
+    fillSlope,
+    slopeMode,
+    maxWidth
+  };
+
+  closeCsTemplateModal();
+  showToast('CS Template "' + name + '" saved!');
+}
+
+function getOglCenterElevForChainage(ch, shiftX) {
+  const pts = data1 && data1[ch];
+  if (!pts || !pts.length) return null;
+  const targetX = typeof shiftX === "number" && isFinite(shiftX) ? shiftX : 0;
+  const atTarget = getElev(targetX, pts);
+  if (atTarget !== null) return atTarget;
+  const atZero = getElev(0, pts);
+  if (atZero !== null) return atZero;
+  return pts[0].y;
+}
+
+function updateChainageRowOglPreview(ch, shiftVal) {
+  const cell = document.querySelector('#csChainageRlBody .cs-ch-ogl-cell[data-ch="' + CSS.escape(ch) + '"]');
+  if (!cell) return;
+  const oglRef = getOglCenterElevForChainage(ch, shiftVal);
+  cell.innerText = oglRef !== null ? oglRef.toFixed(3) : '--';
+}
+
+function renderCsChainageRlTable() {
+  const chainages = Object.keys(data1 || {}).sort((a, b) => parseFloat(a) - parseFloat(b));
+  const tbody = document.getElementById('csChainageRlBody');
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  chainages.forEach((ch, idx) => {
+    const savedShift = activeCsTemplate.chainageShifts && activeCsTemplate.chainageShifts[ch] !== undefined
+      ? Number(activeCsTemplate.chainageShifts[ch])
+      : (typeof activeCsTemplate.shiftCenter === "number" ? Number(activeCsTemplate.shiftCenter) : 0);
+    const oglRef = getOglCenterElevForChainage(ch, savedShift);
+    const savedRl = activeCsTemplate.chainageLevels && activeCsTemplate.chainageLevels[ch] !== undefined
+      ? activeCsTemplate.chainageLevels[ch]
+      : (oglRef !== null ? oglRef : 100.0);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + (idx + 1) + '</td>' +
+      '<td><strong>' + parseFloat(ch).toFixed(3) + '</strong></td>' +
+      '<td><input type="number" class="cs-ch-shift-input" data-ch="' + escapeHtmlAttr(ch) + '" step="0.001" value="' + savedShift.toFixed(3) + '" required oninput="onChainageShiftInput(this)" style="width:110px; padding:5px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; text-align:right;"></td>' +
+      '<td class="cs-ch-ogl-cell" data-ch="' + escapeHtmlAttr(ch) + '">' + (oglRef !== null ? oglRef.toFixed(3) : '--') + '</td>' +
+      '<td><input type="number" class="cs-ch-rl-input" data-ch="' + escapeHtmlAttr(ch) + '" step="0.001" value="' + Number(savedRl).toFixed(3) + '" required style="width:125px; padding:5px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-weight:600; text-align:right;"></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function onChainageShiftInput(inp) {
+  const ch = inp.getAttribute('data-ch');
+  const shiftVal = parseFloat(inp.value);
+  updateChainageRowOglPreview(ch, isNaN(shiftVal) ? 0 : shiftVal);
+}
+
+function fillAllChainageShift() {
+  const val = parseFloat(document.getElementById('csQuickFillShift').value);
+  if (isNaN(val)) {
+    showToast("Enter a valid Shift Center value to set across all chainages!");
+    return;
+  }
+  document.querySelectorAll('#csChainageRlBody .cs-ch-shift-input').forEach(inp => {
+    inp.value = val.toFixed(3);
+    updateChainageRowOglPreview(inp.getAttribute('data-ch'), val);
+  });
+  showToast("Set Shift Center to " + val.toFixed(3) + " m for all chainages.");
+}
+
+function fillAllChainageDesignRL() {
+  const val = parseFloat(document.getElementById('csQuickFillRL').value);
+  if (isNaN(val)) {
+    showToast("Enter a valid RL value to set across all chainages!");
+    return;
+  }
+  document.querySelectorAll('#csChainageRlBody .cs-ch-rl-input').forEach(inp => {
+    inp.value = val.toFixed(3);
+  });
+  showToast("Set Design Level to " + val.toFixed(3) + " m for all chainages.");
+}
+
+function matchAllChainageToOGL() {
+  document.querySelectorAll('#csChainageRlBody .cs-ch-rl-input').forEach(inp => {
+    const ch = inp.getAttribute('data-ch');
+    const shiftInp = document.querySelector('#csChainageRlBody .cs-ch-shift-input[data-ch="' + CSS.escape(ch) + '"]');
+    const shiftVal = shiftInp ? (parseFloat(shiftInp.value) || 0) : 0;
+    updateChainageRowOglPreview(ch, shiftVal);
+    const oglRef = getOglCenterElevForChainage(ch, shiftVal);
+    if (oglRef !== null) {
+      inp.value = oglRef.toFixed(3);
+    }
+  });
+  showToast("Matched all chainage design levels to OGL at each chainage's shift.");
+}
+
+function openApplyCsTemplateModal() {
+  const oglChainages = Object.keys(data1 || {});
+  if (!oglChainages.length) {
+    showToast("Please load or enter OGL data first!");
+    return;
+  }
+  const fallbackCamber = typeof activeCsTemplate.camber === "number" ? activeCsTemplate.camber : 2.5;
+  const lCamb = typeof activeCsTemplate.leftCamber === "number" ? activeCsTemplate.leftCamber : fallbackCamber;
+  const rCamb = typeof activeCsTemplate.rightCamber === "number" ? activeCsTemplate.rightCamber : fallbackCamber;
+  const slopeDesc = activeCsTemplate.slopeMode === "continue"
+    ? "Continue up to " + activeCsTemplate.maxWidth.toFixed(2) + "m"
+    : "Stop at OGL intersection";
+  document.getElementById('applyTplSummary').value =
+    activeCsTemplate.name + " (L:" + activeCsTemplate.leftWidth + "m @" + lCamb + "% camber, R:" + activeCsTemplate.rightWidth + "m @" + rCamb + "% camber, " + slopeDesc + ")";
+
+  document.getElementById('csQuickFillShift').value = "";
+  document.getElementById('csQuickFillRL').value = "";
+  renderCsChainageRlTable();
+
+  document.getElementById('applyCsTemplateModal').classList.remove('hidden');
+  const firstShift = document.querySelector('#csChainageRlBody .cs-ch-shift-input');
+  if (firstShift) firstShift.focus();
+}
+
+function closeApplyCsTemplateModal() {
+  document.getElementById('applyCsTemplateModal').classList.add('hidden');
+}
+
+function findSegmentIntersectionOffset(xA, yA, xB, yB, oglPts) {
+  if (!oglPts || oglPts.length < 2) return null;
+  const minX = Math.min(xA, xB);
+  const maxX = Math.max(xA, xB);
+  const candidateXs = [minX, maxX];
+  for (let i = 0; i < oglPts.length; i++) {
+    if (oglPts[i].x > minX && oglPts[i].x < maxX) {
+      candidateXs.push(oglPts[i].x);
+    }
+  }
+  candidateXs.sort((a, b) => a - b);
+
+  const lineYAt = (x) => {
+    if (Math.abs(xB - xA) < 1e-9) return yA;
+    const t = (x - xA) / (xB - xA);
+    return yA + t * (yB - yA);
+  };
+
+  for (let i = 0; i < candidateXs.length - 1; i++) {
+    const s1 = candidateXs[i];
+    const s2 = candidateXs[i + 1];
+    const ogl1 = getElev(s1, oglPts);
+    const ogl2 = getElev(s2, oglPts);
+    if (ogl1 === null || ogl2 === null) continue;
+    const d1 = lineYAt(s1) - ogl1;
+    const d2 = lineYAt(s2) - ogl2;
+    if (Math.abs(d1) < 1e-6) return s1;
+    if ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) {
+      const frac = Math.abs(d1) / (Math.abs(d1) + Math.abs(d2));
+      return s1 + frac * (s2 - s1);
+    }
+  }
+  return null;
+}
+
+function buildSideProfile(sideSign, centerX, centerRL, oglPts, tpl) {
+  const fallbackCamber = typeof tpl.camber === "number" ? tpl.camber : 2.5;
+  const cwWidth = sideSign < 0 ? tpl.leftWidth : tpl.rightWidth;
+  const sideCamber = sideSign < 0
+    ? (typeof tpl.leftCamber === "number" ? tpl.leftCamber : fallbackCamber)
+    : (typeof tpl.rightCamber === "number" ? tpl.rightCamber : fallbackCamber);
+  const drop = cwWidth * (sideCamber / 100);
+  const edgeX = centerX + sideSign * cwWidth;
+  const edgeY = Number((centerRL - drop).toFixed(3));
+
+  const pts = [];
+  if (sideSign > 0) {
+    pts.push({ x: Number(centerX.toFixed(3)), y: Number(centerRL.toFixed(3)) });
+  }
+  if (cwWidth > 0) {
+    pts.push({ x: Number(edgeX.toFixed(3)), y: edgeY });
+  }
+
+  const startX = cwWidth > 0 ? edgeX : centerX;
+  const startY = cwWidth > 0 ? edgeY : Number(centerRL.toFixed(3));
+  const oglAtStart = getElev(startX, oglPts);
+
+  const isCut = oglAtStart !== null ? (oglAtStart > startY) : false;
+  const hSlope = isCut ? tpl.cutSlope : tpl.fillSlope;
+  const dyPerDx = isCut ? (1 / hSlope) : (-1 / hSlope);
+
+  const distFromCenterStart = Math.abs(startX - centerX);
+  const maxSideWidth = Math.max(0.01, Number(tpl.maxWidth) || 15.0);
+  const farDist = Math.max(distFromCenterStart + 0.01, maxSideWidth);
+  const farLimitX = centerX + sideSign * farDist;
+  const farLimitY = startY + dyPerDx * Math.abs(farLimitX - startX);
+
+  if (tpl.slopeMode === "stop") {
+    const intX = findSegmentIntersectionOffset(startX, startY, farLimitX, farLimitY, oglPts);
+    const maxLimitX = centerX + sideSign * maxSideWidth;
+    if (intX !== null) {
+      const clampedIntX = sideSign < 0 ? Math.max(intX, maxLimitX) : Math.min(intX, maxLimitX);
+      const intY = startY + dyPerDx * Math.abs(clampedIntX - startX);
+      if (Math.abs(clampedIntX - startX) > 1e-4) {
+        pts.push({ x: Number(clampedIntX.toFixed(3)), y: Number(intY.toFixed(3)) });
+      }
+    } else if (maxSideWidth > distFromCenterStart + 1e-4) {
+      const limY = startY + dyPerDx * Math.abs(maxLimitX - startX);
+      pts.push({ x: Number(maxLimitX.toFixed(3)), y: Number(limY.toFixed(3)) });
+    }
+  } else {
+    const targetDist = Math.max(distFromCenterStart, maxSideWidth);
+    const targetX = centerX + sideSign * targetDist;
+    if (Math.abs(targetX - startX) > 1e-4) {
+      const targetY = startY + dyPerDx * Math.abs(targetX - startX);
+      pts.push({ x: Number(targetX.toFixed(3)), y: Number(targetY.toFixed(3)) });
+    }
+  }
+
+  return pts;
+}
+
+function confirmApplyCsTemplate(e) {
+  e.preventDefault();
+  const rlInputs = Array.from(document.querySelectorAll('#csChainageRlBody .cs-ch-rl-input'));
+  if (!rlInputs.length) {
+    showToast("No OGL chainages found!");
+    return;
+  }
+
+  const chainageShifts = {};
+  const chainageLevels = {};
+
+  for (const inp of rlInputs) {
+    const ch = inp.getAttribute('data-ch');
+    const shiftInp = document.querySelector('#csChainageRlBody .cs-ch-shift-input[data-ch="' + CSS.escape(ch) + '"]');
+    const shiftVal = shiftInp ? parseFloat(shiftInp.value) : 0;
+    if (isNaN(shiftVal)) {
+      showToast("Invalid Shift Center at chainage " + ch + "!");
+      if (shiftInp) shiftInp.focus();
+      return;
+    }
+
+    const rlVal = parseFloat(inp.value);
+    if (isNaN(rlVal)) {
+      showToast("Invalid Design Level at chainage " + ch + "!");
+      inp.focus();
+      return;
+    }
+
+    chainageShifts[ch] = Number(shiftVal.toFixed(3));
+    chainageLevels[ch] = Number(rlVal.toFixed(3));
+  }
+
+  activeCsTemplate.chainageShifts = chainageShifts;
+  activeCsTemplate.chainageLevels = chainageLevels;
+
+  const chainages = Object.keys(chainageLevels).sort((a, b) => parseFloat(a) - parseFloat(b));
+  data2 = {};
+  chainages.forEach(ch => {
+    const shiftCenter = chainageShifts[ch] || 0;
+    const designCenterRL = chainageLevels[ch];
+    const oglPts = (data1[ch] || []).slice().sort((a, b) => a.x - b.x);
+    const leftPts = buildSideProfile(-1, shiftCenter, designCenterRL, oglPts, activeCsTemplate);
+    const rightPts = buildSideProfile(1, shiftCenter, designCenterRL, oglPts, activeCsTemplate);
+
+    const combined = [...leftPts, ...rightPts].sort((a, b) => a.x - b.x);
+    const deduped = [];
+    combined.forEach(pt => {
+      if (!deduped.length || Math.abs(deduped[deduped.length - 1].x - pt.x) > 1e-4) {
+        deduped.push(pt);
+      } else {
+        deduped[deduped.length - 1] = pt;
+      }
+    });
+    data2[ch] = deduped;
+  });
+
+  if (!file2Name) {
+    file2Name = activeCsTemplate.name + " (Generated)";
+    document.getElementById('f2Status').innerText = file2Name;
+  }
+
+  closeApplyCsTemplateModal();
+  syncChainages();
+  showToast('Applied "' + activeCsTemplate.name + '" across ' + chainages.length + ' chainages (chainage-wise shift & separate L/R camber)!');
+}
+
 window.onload = function () {
   if (sessionStorage.getItem('isEarthworkLoggedIn') === 'true') {
     document.getElementById('loginModal').classList.add('hidden');
@@ -2848,7 +3212,6 @@ window.onload = function () {
     document.getElementById('loginModal').classList.remove('hidden');
   }
 };
-
   </script>
 </body>
 </html>

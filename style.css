@@ -1020,6 +1020,18 @@ input[type="file"].hidden-file {
   border-color: #f59e0b;
 }
 
+.cs-ctrl-btn-light {
+  background: #f8fafc;
+  color: var(--navy-900);
+  border-color: #cbd5e1;
+}
+
+.cs-ctrl-btn-light:hover {
+  background: #e2e8f0;
+  border-color: var(--navy-800);
+  color: var(--navy-950);
+}
+
 .cs-metrics-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
@@ -1069,8 +1081,9 @@ input[type="file"].hidden-file {
 
 .cs-canvas-stage {
   position: relative;
-  height: 430px;
-  padding: 14px 16px 10px 16px;
+  height: 480px;
+  min-height: 420px;
+  padding: 14px 16px 12px 16px;
   background-color: #ffffff;
   background-image:
     linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
